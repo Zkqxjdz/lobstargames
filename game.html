@@ -512,17 +512,38 @@ setInterval(() => { fetchRealPlayers(); growBotScores(); }, 30000);
 
 
 // ── ENTER ──
-function enterGame() {
+async function enterGame() {
   const v = document.getElementById('nameInput').value.trim();
   if (!v) { document.getElementById('nameInput').focus(); return; }
   playerName = v.toUpperCase();
   document.getElementById('nameOverlay').style.display = 'none';
   document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
-  leaderboard.push({name:playerName, pts:0, burned:0, isMe:true});
+
+  // Load existing score from Supabase
+  try {
+    const r = await fetch(
+      `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}&select=pts,burned,wins,losses,games`,
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    const data = await r.json();
+    if (data && data.length > 0) {
+      const s = data[0];
+      totalPoints = s.pts    || 0;
+      totalBurned = s.burned || 0;
+      wins        = s.wins   || 0;
+      losses      = s.losses || 0;
+      tlog('sys', `Welcome back, ${playerName}! Stats restored.`);
+      tlog('info', `Points: ${totalPoints.toLocaleString()} | Wins: ${wins} | Losses: ${losses} | Burned: ${fmtN(totalBurned)}`);
+    } else {
+      tlog('sys', `Welcome, ${playerName}. The house always burns.`);
+      tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
+    }
+  } catch(e) {
+    tlog('sys', `Welcome, ${playerName}. The house always burns.`);
+  }
+
+  tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
-  tlog('sys', `Welcome, ${playerName}. The house always burns.`);
-  tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
-  tlog('warn', `Min 100 | 1K chip fixed ✓ | SPLIT available`);
 }
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
 
