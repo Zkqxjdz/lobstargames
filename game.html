@@ -208,6 +208,8 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .mbox-btn:hover{background:linear-gradient(180deg,#8800ff,#5500aa);}
 .mbox-notif{position:fixed;bottom:24px;right:24px;background:rgba(138,43,226,0.9);border:1px solid #cc88ff;border-radius:8px;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#fff;z-index:8000;display:none;animation:slideIn .4s ease;}
 @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
+
+.lbrow.bot .lbnm { color: var(--text-dim); }
 </style>
 </head>
 <body>
@@ -389,16 +391,104 @@ let gameState = 'betting'; // betting | playing | done
 let totalBurned = 0, totalPoints = 0, wins = 0, losses = 0, streak = 0, tokenPrice = 0.0042;
 let cdTimer = null;
 
-let leaderboard = [
-  {name:'SnipeKing', pts:84200, burned:1820000},
-  {name:'MoonCrab',  pts:71500, burned:1540000},
-  {name:'DegenLord', pts:65800, burned:1200000},
-  {name:'ClawMaster',pts:52300, burned:980000},
-  {name:'RedShell',  pts:41100, burned:750000},
-  {name:'SolanaShark',pts:38700,burned:640000},
-  {name:'RugnPull',  pts:29400, burned:510000},
-  {name:'PumpWizard',pts:18900, burned:340000},
+// Leaderboard now managed by Supabase + bots — see below
+
+// ── SUPABASE CONFIG ──
+const SUPA_URL = "https://mvakqyddivstvsbioptg.supabase.co";
+const SUPA_KEY = "sb_publishable_vXP8VP79bE0zIw1VsjSw9w_iYs72WZ-";
+
+// ── TOP 3 FIXED BOTS (always stay ahead of real players) ──
+const TOP_BOTS = [
+  {name:'SnipeKing',  pts:84200, burned:1820000, isBot:true},
+  {name:'MoonCrab',   pts:71500, burned:1540000, isBot:true},
+  {name:'DegenLord',  pts:65800, burned:1200000, isBot:true},
 ];
+// Mid-pack bots (fill gaps)
+const MID_BOTS = [
+  {name:'ClawMaster', pts:12300, burned:980000,  isBot:true},
+  {name:'RedShell',   pts:9100,  burned:750000,  isBot:true},
+  {name:'SolanaShark',pts:7700,  burned:640000,  isBot:true},
+  {name:'RugnPull',   pts:5400,  burned:510000,  isBot:true},
+  {name:'PumpWizard', pts:3900,  burned:340000,  isBot:true},
+];
+
+let realPlayers = []; // from Supabase
+let lbReady = false;
+
+// ── Fetch real players from Supabase ──
+async function fetchRealPlayers() {
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/leaderboard?select=handle,pts,burned,wins,losses,games&order=pts.desc&limit=50`, {
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY
+      }
+    });
+    if (!r.ok) return;
+    const data = await r.json();
+    realPlayers = data.map(p => ({
+      name: p.handle,
+      pts: p.pts,
+      burned: p.burned || 0,
+      isReal: true
+    }));
+  } catch(e) {
+    console.log('Supabase fetch error:', e);
+  }
+  renderLB();
+}
+
+// ── Save/update real player score ──
+async function saveScore() {
+  if (!playerName) return;
+  try {
+    // Upsert — insert or update if handle exists
+    await fetch(`${SUPA_URL}/rest/v1/leaderboard`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      body: JSON.stringify({
+        handle: playerName,
+        pts: totalPoints,
+        burned: totalBurned,
+        wins: wins,
+        losses: losses,
+        games: wins + losses,
+        updated_at: new Date().toISOString()
+      })
+    });
+  } catch(e) {
+    console.log('Supabase save error:', e);
+  }
+}
+
+// ── Auto-grow top bot scores so they always lead ──
+function growBotScores() {
+  const topRealPts = realPlayers.length > 0
+    ? Math.max(...realPlayers.map(p => p.pts))
+    : 0;
+  const myPts = totalPoints;
+  const maxReal = Math.max(topRealPts, myPts);
+
+  // Top 3 bots always stay above best real player
+  if (maxReal > 0) {
+    TOP_BOTS[0].pts = Math.max(TOP_BOTS[0].pts, maxReal + 15000 + Math.floor(Math.random()*2000));
+    TOP_BOTS[1].pts = Math.max(TOP_BOTS[1].pts, maxReal + 8000  + Math.floor(Math.random()*1500));
+    TOP_BOTS[2].pts = Math.max(TOP_BOTS[2].pts, maxReal + 3000  + Math.floor(Math.random()*1000));
+  }
+  // Slowly grow top bots over time
+  TOP_BOTS[0].pts += Math.floor(Math.random()*400 + 100);
+  TOP_BOTS[1].pts += Math.floor(Math.random()*300 + 80);
+  TOP_BOTS[2].pts += Math.floor(Math.random()*200 + 60);
+}
+
+// ── Fetch every 30s ──
+setInterval(() => { fetchRealPlayers(); growBotScores(); }, 30000);
+
 
 // ── ENTER ──
 function enterGame() {
@@ -408,7 +498,7 @@ function enterGame() {
   document.getElementById('nameOverlay').style.display = 'none';
   document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
   leaderboard.push({name:playerName, pts:0, burned:0, isMe:true});
-  renderLB(); updateUI(); startTicker(); startBots();
+  fetchRealPlayers(); updateUI(); startTicker(); startBots();
   tlog('sys', `Welcome, ${playerName}. The house always burns.`);
   tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
   tlog('warn', `Min 100 | 1K chip fixed ✓ | SPLIT available`);
@@ -865,9 +955,9 @@ function burnTokens(amt) {
 
 // ── LEADERBOARD ──
 function updateLBPlayer(pts) {
-  const me = leaderboard.find(p=>p.isMe);
-  if (me) { me.pts += pts; me.burned = totalBurned; }
   renderLB();
+  // Save to Supabase after every hand
+  saveScore();
 }
 function renderLB() {
   const sorted = [...leaderboard].sort((a,b)=>b.pts-a.pts);
