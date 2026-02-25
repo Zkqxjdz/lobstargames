@@ -451,6 +451,36 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
   </div>
 </div>
 
+
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mbox-overlay" id="mysteryBoxOverlay">
+  <div class="mbox-card">
+    <span class="mbox-emoji" id="mboxEmoji">🎁</span>
+    <div class="mbox-title">MYSTERY BOX!</div>
+    <div class="mbox-reward" id="mboxReward">+5,000 $LOBSTARGAMES</div>
+    <div class="mbox-desc" id="mboxDesc">You found a mystery box! This reward will be airdropped to your wallet when we hit $50K MC.</div>
+    <button class="mbox-btn" onclick="closeMysteryBox()">🦞 CLAIM IT</button>
+  </div>
+</div>
+
+<!-- Mystery box notification -->
+<div class="mbox-notification" id="mboxNotif" onclick="openMysteryBox()">
+  🎁 MYSTERY BOX AVAILABLE!
+</div>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mystery-overlay" id="mysteryOverlay">
+  <div class="mystery-box" id="mysteryBox">
+    <button class="mystery-box-close" onclick="closeMysteryBox()">✕</button>
+    <div class="mystery-box-icon" id="mysteryIcon">🎁</div>
+    <div class="mystery-box-title" id="mysteryTitle">MYSTERY BOX</div>
+    <div class="mystery-box-sub" id="mysterySub">YOU'VE EARNED A REWARD</div>
+    <div class="mystery-box-reward" id="mysteryReward"></div>
+    <div class="mystery-box-desc" id="mysteryDesc"></div>
+    <button class="mystery-box-btn" id="mysteryBtn" onclick="claimMysteryReward()">🎲 OPEN BOX</button>
+  </div>
+</div>
 <script>
 // ═══════════════════════════════════════════
 // LOBSTAR GAMES — Clean Rewrite v3
@@ -492,7 +522,6 @@ function enterGame(){
   tlog('info','10,000 $LOBSTARGAMES loaded | 1K chip ✓ | SPLIT ✓');
   tlog('warn','Losses burn supply forever 🔥');
 }
-document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')enterGame();});
 
 // ── Deck ──
 function buildDeck(){deck=[];for(let s of SUITS)for(let r of RANKS)deck.push({r,s});shuffle(deck);}
@@ -918,8 +947,11 @@ function startTicker(){
 }
 
 // ── Init ──
-btns(true,false,false,false,false);
-renderLB();
+document.addEventListener('DOMContentLoaded', function(){
+  btns(true,false,false,false,false);
+  renderLB();
+  document.getElementById('nameInput').addEventListener('keydown',e=>{if(e.key==='Enter')enterGame();});
+});
 
 // ── Share Score on X ──
 function shareScore(){
@@ -1056,7 +1088,7 @@ function updateMilestones(mcUSD) {
 const MYSTERY_REWARDS = [
   { weight:40, icon:'🦞', title:'LOBSTAR STASH',    reward:'1,000 $LOBSTARGAMES',  desc:'Stay claw-some! You earned a token airdrop.',                  type:'tokens', amount:1000   },
   { weight:30, icon:'⭐', title:'STAR REWARD',       reward:'5,000 $LOBSTARGAMES',  desc:'Shining bright! A bigger token drop incoming.',                type:'tokens', amount:5000   },
-  { weight:15, icon:'🔥', title:'BURN BONUS',        reward:'10,000 $LOBSTARGAMES', desc:'You're on fire! Top tier token reward locked in.',             type:'tokens', amount:10000  },
+  { weight:15, icon:'🔥', title:'BURN BONUS',        reward:'10,000 $LOBSTARGAMES', desc:'You\'re on fire! Top tier token reward locked in.',             type:'tokens', amount:10000  },
   { weight:10, icon:'👑', title:'DEGEN ROYALE',      reward:'25,000 $LOBSTARGAMES', desc:'The claw has chosen wisely. Legendary drop incoming.',          type:'tokens', amount:25000  },
   { weight: 4, icon:'💎', title:'DIAMOND CLAW',      reward:'50,000 $LOBSTARGAMES', desc:'Ultra rare! You just won the biggest mystery box drop.',        type:'tokens', amount:50000  },
   { weight: 1, icon:'🌙', title:'MOONSHOT',          reward:'100,000 $LOBSTARGAMES',desc:'ONE IN A HUNDRED. The lobster gods smile upon you. WAGMI.',     type:'tokens', amount:100000 },
@@ -1150,34 +1182,5 @@ function checkMysteryTriggers(wins, streak, points) {
 }
 
 </script>
-
-<!-- MYSTERY BOX OVERLAY -->
-<div class="mbox-overlay" id="mysteryBoxOverlay">
-  <div class="mbox-card">
-    <span class="mbox-emoji" id="mboxEmoji">🎁</span>
-    <div class="mbox-title">MYSTERY BOX!</div>
-    <div class="mbox-reward" id="mboxReward">+5,000 $LOBSTARGAMES</div>
-    <div class="mbox-desc" id="mboxDesc">You found a mystery box! This reward will be airdropped to your wallet when we hit $50K MC.</div>
-    <button class="mbox-btn" onclick="closeMysteryBox()">🦞 CLAIM IT</button>
-  </div>
-</div>
-
-<!-- Mystery box notification -->
-<div class="mbox-notification" id="mboxNotif" onclick="openMysteryBox()">
-  🎁 MYSTERY BOX AVAILABLE!
-</div>
-
-<!-- MYSTERY BOX OVERLAY -->
-<div class="mystery-overlay" id="mysteryOverlay">
-  <div class="mystery-box" id="mysteryBox">
-    <button class="mystery-box-close" onclick="closeMysteryBox()">✕</button>
-    <div class="mystery-box-icon" id="mysteryIcon">🎁</div>
-    <div class="mystery-box-title" id="mysteryTitle">MYSTERY BOX</div>
-    <div class="mystery-box-sub" id="mysterySub">YOU'VE EARNED A REWARD</div>
-    <div class="mystery-box-reward" id="mysteryReward"></div>
-    <div class="mystery-box-desc" id="mysteryDesc"></div>
-    <button class="mystery-box-btn" id="mysteryBtn" onclick="claimMysteryReward()">🎲 OPEN BOX</button>
-  </div>
-</div>
 </body>
 </html>
