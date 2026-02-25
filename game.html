@@ -193,6 +193,21 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .ninput:focus{border-color:var(--gold);box-shadow:0 0 14px rgba(255,184,0,0.2);}
 .nenter{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid #ff7700;width:100%;font-size:17px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;padding:12px;border-radius:3px;cursor:pointer;}
 .nenter:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+
+/* MYSTERY BOX OVERLAY */
+.mbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.mbox-overlay.show{opacity:1;pointer-events:all;}
+.mbox{background:var(--panel);border:2px solid rgba(138,43,226,0.5);border-radius:10px;padding:32px 36px;text-align:center;max-width:420px;width:92%;box-shadow:0 0 60px rgba(138,43,226,0.3);}
+.mbox-icon{font-size:56px;margin-bottom:12px;animation:bounce .6s ease infinite alternate;}
+@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+.mbox-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;color:#cc88ff;margin-bottom:4px;}
+.mbox-reward{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);margin:10px 0;}
+.mbox-desc{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);line-height:1.7;margin-bottom:20px;}
+.mbox-trigger{font-family:'Share Tech Mono',monospace;font-size:10px;color:#9955cc;letter-spacing:2px;margin-bottom:16px;}
+.mbox-btn{background:linear-gradient(180deg,#6600cc,#440088);color:#fff;border:1px solid #aa44ff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:12px 40px;border-radius:4px;cursor:pointer;width:100%;}
+.mbox-btn:hover{background:linear-gradient(180deg,#8800ff,#5500aa);}
+.mbox-notif{position:fixed;bottom:24px;right:24px;background:rgba(138,43,226,0.9);border:1px solid #cc88ff;border-radius:8px;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#fff;z-index:8000;display:none;animation:slideIn .4s ease;}
+@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
 </style>
 </head>
 <body>
@@ -703,6 +718,7 @@ function finishGame() {
   totalPoints += totalPtEarned;
   if (totalBurnAmt > 0) burnTokens(totalBurnAmt);
   updateLBPlayer(totalPtEarned);
+  checkMboxTrigger();
   bet = 0; updBet(); updateUI();
 
   // Log
@@ -906,6 +922,50 @@ function startTicker() {
   },3000);
 }
 
+// ── Mystery Box ──
+const MBOX_REWARDS = [
+  {weight:40, icon:'🦞', title:'LOBSTAR STASH',    reward:'1,000 $LOBSTARGAMES',  desc:'Stay claw-some! You earned a token stash.',            type:'tokens', amount:1000},
+  {weight:30, icon:'⭐', title:'STAR REWARD',       reward:'5,000 $LOBSTARGAMES',  desc:'Shining bright! A bigger token drop incoming.',        type:'tokens', amount:5000},
+  {weight:15, icon:'🔥', title:'BURN BONUS',        reward:'10,000 $LOBSTARGAMES', desc:'You are on fire! Top tier token reward locked in.',    type:'tokens', amount:10000},
+  {weight:10, icon:'👑', title:'DEGEN ROYALE',      reward:'25,000 $LOBSTARGAMES', desc:'The claw has chosen wisely. Legendary reward.',         type:'tokens', amount:25000},
+  {weight: 4, icon:'💎', title:'DIAMOND CLAW',      reward:'50,000 $LOBSTARGAMES', desc:'Ultra rare! You just won the biggest token stash.',     type:'tokens', amount:50000},
+  {weight: 1, icon:'🌙', title:'MOONSHOT',          reward:'100,000 $LOBSTARGAMES',desc:'ONE IN A HUNDRED. The lobster gods have blessed you.', type:'tokens', amount:100000},
+];
+
+function pickMboxReward() {
+  const total = MBOX_REWARDS.reduce((s,r) => s+r.weight, 0);
+  let roll = Math.random() * total;
+  for (const r of MBOX_REWARDS) { roll -= r.weight; if (roll <= 0) return r; }
+  return MBOX_REWARDS[0];
+}
+
+function triggerMbox(reason) {
+  const reward = pickMboxReward();
+  document.getElementById('mboxIcon').textContent = reward.icon;
+  document.getElementById('mboxTrigger').textContent = reason.toUpperCase();
+  document.getElementById('mboxReward').textContent = reward.reward;
+  document.getElementById('mboxDesc').textContent = reward.desc;
+  document.getElementById('mboxOverlay').classList.add('show');
+}
+
+function closeMbox() {
+  document.getElementById('mboxOverlay').classList.remove('show');
+}
+
+function checkMboxTrigger() {
+  if (streak === 3)  { setTimeout(() => triggerMbox('3 WIN STREAK!'), 800); }
+  if (streak === 5)  { setTimeout(() => triggerMbox('5 WIN STREAK!'), 800); }
+  if (totalPoints >= 10000  && totalPoints - wins*100 < 10000)  { setTimeout(() => triggerMbox('10,000 POINTS REACHED!'), 800); }
+  if (totalPoints >= 50000  && totalPoints - wins*100 < 50000)  { setTimeout(() => triggerMbox('50,000 POINTS REACHED!'), 800); }
+  if (totalPoints >= 100000 && totalPoints - wins*100 < 100000) { setTimeout(() => triggerMbox('100,000 POINTS REACHED!'), 800); }
+}
+
+// Close on overlay click
+document.addEventListener('click', function(e) {
+  const overlay = document.getElementById('mboxOverlay');
+  if (e.target === overlay) closeMbox();
+});
+
 // ── Share Score ──
 function shareScore(){
   const txt = encodeURIComponent(
@@ -923,5 +983,18 @@ function shareScore(){
 setBtns(true,false,false,false,false);
 renderLB();
 </script>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mbox-overlay" id="mboxOverlay">
+  <div class="mbox">
+    <div class="mbox-icon" id="mboxIcon">🎁</div>
+    <div class="mbox-title">MYSTERY BOX</div>
+    <div class="mbox-trigger" id="mboxTrigger">TRIGGERED BY STREAK</div>
+    <div class="mbox-reward" id="mboxReward">??? $LOBSTARGAMES</div>
+    <div class="mbox-desc" id="mboxDesc">Loading your reward...</div>
+    <button class="mbox-btn" onclick="closeMbox()">CLAIM REWARD 🦞</button>
+  </div>
+</div>
+<div class="mbox-notif" id="mboxNotif">🎁 Mystery Box unlocked! Check your reward!</div>
 </body>
 </html>
