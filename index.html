@@ -356,6 +356,38 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
 /* SCROLL REVEAL */
 .reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
 .reveal.visible{opacity:1;transform:translateY(0);}
+
+/* ── MILESTONE TRACKER ────────────────────────────────────────────────── */
+.milestone-bar{background:rgba(255,140,0,0.04);border-top:1px solid rgba(255,140,0,0.15);
+  border-bottom:1px solid rgba(255,140,0,0.15);padding:12px 20px;
+  display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+  position:relative;overflow:hidden;}
+.milestone-bar::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,140,0,0.03),transparent);
+  animation:mileSweep 3s ease-in-out infinite;}
+@keyframes mileSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.mile-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;
+  color:var(--text-dim);margin-right:16px;white-space:nowrap;}
+.mile-track{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;}
+.mile-node{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+.mile-node:not(:last-child)::after{content:'──────';font-size:8px;color:rgba(255,184,0,0.2);
+  position:absolute;left:100%;top:10px;margin-left:2px;margin-right:2px;}
+.mile-circle{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;border:2px solid rgba(255,184,0,0.2);
+  background:rgba(0,0,0,0.4);transition:all .3s;position:relative;}
+.mile-circle.done{border-color:var(--gold);background:rgba(255,184,0,0.15);
+  box-shadow:0 0 12px rgba(255,184,0,0.4);}
+.mile-circle.active{border-color:var(--orange);background:rgba(255,100,0,0.1);
+  animation:milePulse 1.5s ease-in-out infinite;}
+@keyframes milePulse{0%,100%{box-shadow:0 0 8px rgba(255,100,0,0.3)}50%{box-shadow:0 0 20px rgba(255,100,0,0.7)}}
+.mile-caption{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;
+  color:var(--text-dim);white-space:nowrap;text-align:center;}
+.mile-caption.done{color:var(--gold);}
+.mile-caption.active{color:var(--orange);}
+.mile-progress{font-family:'Bebas Neue',sans-serif;font-size:11px;margin-left:16px;
+  color:var(--text-dim);white-space:nowrap;}
+.mile-progress span{color:var(--orange);}
+
 </style>
 </head>
 <body>
@@ -368,6 +400,7 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
     <a href="#tokenomics">TOKENOMICS</a>
     <a href="#games">GAMES</a>
     <a href="#roadmap">ROADMAP</a>
+    <a href="#rewards" style="color:var(--orange);">🎁 REWARDS</a>
     <a href="https://x.com/LobstarGames" target="_blank" style="color:var(--gold);border:1px solid rgba(255,184,0,0.3);padding:5px 12px;border-radius:3px;letter-spacing:2px;font-size:13px;">𝕏 @LOBSTARGAMES</a>
     <div class="ca-pill" onclick="copyCA()">
       <span class="ca-label">CA</span>
@@ -406,7 +439,34 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
 
 <!-- LIVE STATS -->
 <div class="stats-bar">
-  <div class="stat-item"><div class="stat-val green" id="livePlayers">247</div><div class="stat-lbl">LIVE PLAYERS</div></div>
+  <div class="stat-item"><div class="stat-val green" id="livePlayers">247</div>
+<div class="milestone-bar" id="milestonebar">
+  <div class="mile-label">🎯 MILESTONES</div>
+  <div class="mile-track">
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode1">🚀</div>
+      <div class="mile-caption" id="mcap1">LAUNCH</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode2">💰</div>
+      <div class="mile-caption" id="mcap2">$10K MC</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode3">🦞</div>
+      <div class="mile-caption" id="mcap3">$50K MC<br><span style="color:#ffb800;font-size:8px;">🎁 AIRDROP</span></div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode4">🔥</div>
+      <div class="mile-caption" id="mcap4">$100K MC</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode5">🌙</div>
+      <div class="mile-caption" id="mcap5">$1M MC</div>
+    </div>
+  </div>
+  <div class="mile-progress">MC: <span id="mileCurrentMC">...</span></div>
+</div>
+<div class="stat-lbl">LIVE PLAYERS</div></div>
   <div class="stat-item"><div class="stat-val" id="liveSupply">1,000,000,000</div><div class="stat-lbl">$LOBSTAR SUPPLY</div></div>
   <div class="stat-item"><div class="stat-val fire" id="liveBurned">0</div><div class="stat-lbl">TOKENS BURNED 🔥</div></div>
   <div class="stat-item"><div class="stat-val" id="liveHolders">—</div><div class="stat-lbl">HOLDERS</div></div>
@@ -446,7 +506,7 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
           — The Lobstar, allegedly
         </div>
         <p class="story-para">
-          One stormy night in <strong>2025</strong>, a wallet appeared on pump.fun. No VC backing. No insider allocation. No team tokens. Just a <strong>gangster lobster in a suit</strong>, a briefcase full of $SOL, and a dream to run the most transparent, most degenerate, most <em>deflationary</em> gaming token in Solana history.
+          One stormy night in <strong>2026</strong>, a wallet appeared on pump.fun. No VC backing. No insider allocation. No team tokens. Just a <strong>gangster lobster in a suit</strong>, a briefcase full of $SOL, and a dream to run the most transparent, most degenerate, most <em>deflationary</em> gaming token in Solana history.
         </p>
         <p class="story-para">
           The rules are simple: <strong>play the games, lose tokens = they burn forever.</strong> Win, and you climb the leaderboard. The supply shrinks with every hand dealt. The price goes up. The legend grows.
@@ -668,6 +728,51 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
   </div>
 </section>
 
+
+<!-- MC MILESTONE TRACKER -->
+<section style="background:rgba(4,2,0,0.98);padding:60px 20px;border-top:1px solid rgba(255,184,0,0.1);border-bottom:1px solid rgba(255,184,0,0.1);" id="milestones">
+  <div style="max-width:900px;margin:0 auto;text-align:center;">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:6px;color:var(--dim);margin-bottom:8px;">MARKET CAP MILESTONES</div>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(28px,5vw,48px);color:var(--gold);letter-spacing:3px;margin-bottom:6px;">REACH THE MILESTONE. CLAIM THE REWARD.</div>
+    <div style="font-size:14px;color:var(--text);margin-bottom:40px;">Every milestone unlocks real rewards for holders &amp; community. No cap. No BS.</div>
+
+    <div style="background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.25);border-radius:8px;padding:32px;max-width:600px;margin:0 auto 40px;position:relative;overflow:hidden;">
+      <div style="position:absolute;inset:0;background:radial-gradient(ellipse at 50% 0%,rgba(255,184,0,0.06),transparent 70%);pointer-events:none;"></div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:64px;color:var(--gold);line-height:1;letter-spacing:2px;">$50,000</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:4px;color:var(--dim);margin-bottom:24px;">MARKET CAP TARGET</div>
+      <div style="background:rgba(255,184,0,0.08);border-radius:4px;height:10px;margin-bottom:8px;overflow:hidden;border:1px solid rgba(255,184,0,0.15);">
+        <div id="mcProgressBar" style="height:100%;width:0%;background:linear-gradient(90deg,#ff6600,#ffb800);border-radius:4px;transition:width 1.5s ease;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-bottom:28px;">
+        <span>$0</span><span id="mcCurrentLabel" style="color:var(--gold);">LAUNCHING SOON</span><span>$50K</span>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+        <div style="background:rgba(255,100,0,0.06);border:1px solid rgba(255,100,0,0.2);border-radius:6px;padding:18px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🦞</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--orange);letter-spacing:2px;">TOKEN AIRDROP</div>
+          <div style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.6;">Top 10 leaderboard players receive <span style="color:var(--gold);">$LOBSTARGAMES tokens</span> airdropped to their wallet</div>
+          <div style="margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);">🥇 40% &bull; 🥈 25% &bull; 🥉 15% &bull; 4-10 share 20%</div>
+        </div>
+        <div style="background:rgba(150,0,255,0.06);border:1px solid rgba(150,0,255,0.25);border-radius:6px;padding:18px;text-align:center;">
+          <div style="font-size:32px;margin-bottom:8px;">🎁</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#c084fc;letter-spacing:2px;">MYSTERY BOX</div>
+          <div style="font-size:12px;color:var(--text);margin-top:6px;line-height:1.6;">Active players unlock <span style="color:#c084fc;">random mystery boxes</span> in-game — tokens, multipliers, rare cosmetics</div>
+          <div style="margin-top:10px;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);">PLAY MORE = MORE CHANCES</div>
+        </div>
+      </div>
+      <div id="mcStatusBadge" style="display:inline-block;background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.3);border-radius:20px;padding:8px 24px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);letter-spacing:2px;">
+        🔒 LOCKED — HELP US GET THERE
+      </div>
+    </div>
+
+    <div style="font-size:13px;color:var(--text);margin-bottom:20px;">When we hit <span style="color:var(--gold);">$50K MC</span>, rewards fire automatically. Share the game. Burn the supply. Build the legend.</div>
+    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+      <a href="https://lobstargames.win/game" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;padding:12px 28px;border-radius:4px;text-decoration:none;">🃏 PLAY NOW — EARN POINTS</a>
+      <a href="https://x.com/LobstarGames" target="_blank" style="font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;background:rgba(255,184,0,0.06);color:var(--gold);padding:12px 28px;border-radius:4px;text-decoration:none;border:1px solid rgba(255,184,0,0.3);">🐦 FOLLOW FOR UPDATES</a>
+    </div>
+  </div>
+</section>
+
 <!-- BUY / CA SECTION -->
 <section class="buy-section" id="buy">
   <div class="buy-inner">
@@ -736,6 +841,150 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
   </div>
 </section>
 
+<!-- MILESTONES & REWARDS -->
+<section id="rewards" style="padding:80px 20px;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(255,80,0,0.04) 100%);border-top:1px solid rgba(255,184,0,0.1);">
+  <div style="max-width:900px;margin:0 auto;">
+
+    <!-- Title -->
+    <div style="text-align:center;margin-bottom:48px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:6px;color:var(--orange);margin-bottom:8px;">BURN TO UNLOCK</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(32px,5vw,56px);background:linear-gradient(180deg,#ffe066,#ff8800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">MILESTONE REWARDS</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);margin-top:8px;letter-spacing:2px;">COMMUNITY GETS REWARDED AS WE GROW</div>
+    </div>
+
+    <!-- $50K milestone card — main one -->
+    <div style="background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.2);border-radius:12px;padding:32px;margin-bottom:24px;position:relative;overflow:hidden;">
+      <!-- Glow -->
+      <div style="position:absolute;top:-40px;right:-40px;width:200px;height:200px;background:radial-gradient(circle,rgba(255,184,0,0.08),transparent 70%);pointer-events:none;"></div>
+
+      <!-- Header row -->
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <div style="font-size:36px;">🦞</div>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--gold);letter-spacing:2px;">$50,000 MARKET CAP</div>
+            <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:3px;">MILESTONE #1 — UNLOCK AT $50K</div>
+          </div>
+        </div>
+        <div id="ms-status-badge" style="font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;padding:8px 18px;border-radius:4px;background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.3);color:var(--gold);">🔒 LOCKED</div>
+      </div>
+
+      <!-- Progress bar -->
+      <div style="margin-bottom:28px;">
+        <div style="display:flex;justify-content:space-between;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:8px;">
+          <span>CURRENT MC: <span id="ms-current-mc" style="color:var(--gold);">loading...</span></span>
+          <span>TARGET: <span style="color:var(--orange);">$50,000</span></span>
+        </div>
+        <div style="background:rgba(255,184,0,0.08);border-radius:99px;height:12px;overflow:hidden;border:1px solid rgba(255,184,0,0.15);">
+          <div id="ms-progress-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#cc5500,#ff8800,#ffcc00);border-radius:99px;transition:width 1s ease;box-shadow:0 0 12px rgba(255,140,0,0.5);"></div>
+        </div>
+        <div style="text-align:right;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--orange);margin-top:6px;"><span id="ms-pct">0</span>% TO UNLOCK</div>
+      </div>
+
+      <!-- Two reward boxes -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+
+        <!-- Token airdrop -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(255,184,0,0.15);border-radius:8px;padding:20px;">
+          <div style="font-size:28px;margin-bottom:10px;">🪙</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);letter-spacing:2px;margin-bottom:6px;">TOKEN AIRDROP</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);line-height:1.7;">
+            Top 10 leaderboard players + all active holders receive $LOBSTARGAMES token airdrop.<br><br>
+            <span style="color:var(--orange);">🥇 Rank 1 — 5,000,000 tokens</span><br>
+            <span style="color:var(--text-dim);">🥈 Rank 2 — 3,000,000 tokens</span><br>
+            <span style="color:var(--text-dim);">🥉 Rank 3 — 2,000,000 tokens</span><br>
+            <span style="color:var(--text-dim);">🎯 Rank 4-10 — 500,000 each</span><br>
+            <span style="color:var(--text-dim);">💎 All holders — 100,000 each</span>
+          </div>
+        </div>
+
+        <!-- Mystery box -->
+        <div style="background:rgba(0,0,0,0.3);border:1px solid rgba(138,43,226,0.3);border-radius:8px;padding:20px;position:relative;overflow:hidden;">
+          <div style="position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(138,43,226,0.05),transparent 70%);pointer-events:none;"></div>
+          <div style="font-size:28px;margin-bottom:10px;">🎁</div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:18px;color:#cc88ff;letter-spacing:2px;margin-bottom:6px;">MYSTERY BOX</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);line-height:1.7;">
+            5 random active players who played 10+ games get a mystery box reward.<br><br>
+            <span style="color:#cc88ff;">📦 Could contain:</span><br>
+            <span style="color:var(--text-dim);">• Bonus token stash</span><br>
+            <span style="color:var(--text-dim);">• Exclusive NFT badge</span><br>
+            <span style="color:var(--text-dim);">• SOL prize</span><br>
+            <span style="color:var(--text-dim);">• Whitelist spot</span><br>
+            <span style="color:#cc88ff; font-size:10px;">Winners announced on X</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Bottom note -->
+      <div style="margin-top:20px;padding:12px 16px;background:rgba(255,80,0,0.05);border-radius:6px;border-left:3px solid var(--orange);">
+        <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);letter-spacing:1px;">
+          🔥 <span style="color:var(--orange);">Every loss burns supply</span> — the more people play, the faster we hit $50K. Burn the supply. Unlock the rewards. Everyone wins.
+        </div>
+      </div>
+    </div>
+
+    <!-- Future milestones teaser -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div style="background:rgba(255,184,0,0.02);border:1px solid rgba(255,184,0,0.08);border-radius:8px;padding:16px;text-align:center;opacity:0.5;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text-dim);letter-spacing:2px;">$100K MC</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:2px;">🔒 MILESTONE #2</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:8px;">Bigger airdrop + game feature unlock</div>
+      </div>
+      <div style="background:rgba(255,184,0,0.02);border:1px solid rgba(255,184,0,0.08);border-radius:8px;padding:16px;text-align:center;opacity:0.4;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text-dim);letter-spacing:2px;">$500K MC</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:2px;">🔒 MILESTONE #3</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:8px;">Tournament + massive prize pool</div>
+      </div>
+      <div style="background:rgba(255,184,0,0.02);border:1px solid rgba(255,184,0,0.08);border-radius:8px;padding:16px;text-align:center;opacity:0.3;">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--text-dim);letter-spacing:2px;">$1M MC</div>
+        <div style="font-family:'Share Tech Kane',sans-serif;font-size:10px;color:var(--dim);margin-top:4px;letter-spacing:2px;">🔒 MILESTONE #4</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);margin-top:8px;">??? (legend tier unlocked)</div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+// ── Milestone MC tracker ──────────────────────────────────────────────────
+(function initMilestone(){
+  const TARGET = 50000;
+  const bar    = document.getElementById('ms-progress-bar');
+  const pct    = document.getElementById('ms-pct');
+  const mcEl   = document.getElementById('ms-current-mc');
+  const badge  = document.getElementById('ms-status-badge');
+
+  async function fetchMC(){
+    // Replace CA_ADDRESS with your real CA after launch
+    const CA = window.LOBSTAR_CA || null;
+    if(!CA){ setMC(0); return; }
+    try{
+      const r = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${CA}`);
+      const d = await r.json();
+      const pair = d?.pairs?.[0];
+      if(pair) setMC(parseFloat(pair.fdv||0));
+    }catch(e){ setMC(0); }
+  }
+
+  function setMC(mc){
+    const p = Math.min(100, (mc/TARGET)*100);
+    mcEl.textContent = mc>0 ? '$'+mc.toLocaleString('en',{maximumFractionDigits:0}) : 'TBA after launch';
+    bar.style.width  = p+'%';
+    pct.textContent  = p.toFixed(1);
+    if(p>=100){
+      badge.textContent='🔓 UNLOCKED';
+      badge.style.background='rgba(0,255,136,0.1)';
+      badge.style.borderColor='rgba(0,255,136,0.4)';
+      badge.style.color='var(--green)';
+    }
+  }
+
+  fetchMC();
+  setInterval(fetchMC, 30000);
+})();
+</script>
+
 <!-- FOOTER -->
 <footer>
   <div class="footer-logo">L★BSTAR GAMES</div>
@@ -745,6 +994,7 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
     <a href="#tokenomics">TOKENOMICS</a>
     <a href="#games">GAMES</a>
     <a href="#roadmap">ROADMAP</a>
+    <a href="#milestones">REWARDS</a>
     <a href="https://lobstargames.win/game">PLAY</a>
   </div>
   <div class="footer-disc">
@@ -753,7 +1003,7 @@ footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
     Not financial advice. Do your own research. The house always burns. 🦞🔥
   </div>
   <div style="margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim)">
-    © 2025 LOBSTAR GAMES • lobstargames.win • 𝕏 @LobstarGames • BUILT ON SOLANA • POWERED BY DEGENERACY
+    © 2026 LOBSTAR GAMES • lobstargames.win • 𝕏 @LobstarGames • BUILT ON SOLANA • POWERED BY DEGENERACY
   </div>
 </footer>
 
@@ -835,6 +1085,99 @@ document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
 const fullCA = CA;
 document.getElementById('caText').textContent = fullCA.length>22 ? fullCA.slice(0,10)+'...'+fullCA.slice(-6) : fullCA;
 document.getElementById('caAddrBig').textContent = fullCA;
+
+// ── MC Milestone Progress ──────────────────────────────────────────────────
+const MC_TARGET = 50000;
+
+function updateMCProgress(currentMC) {
+  const pct = Math.min((currentMC / MC_TARGET) * 100, 100);
+  const bar  = document.getElementById('mcProgressBar');
+  const lbl  = document.getElementById('mcCurrentLabel');
+  const badge= document.getElementById('mcStatusBadge');
+  if (!bar) return;
+
+  bar.style.width = pct + '%';
+
+  if (currentMC >= MC_TARGET) {
+    // UNLOCKED
+    lbl.textContent  = '🎉 $' + currentMC.toLocaleString() + ' — MILESTONE HIT!';
+    lbl.style.color  = '#00ff88';
+    badge.innerHTML  = '🔓 UNLOCKED — REWARDS DISTRIBUTING';
+    badge.style.borderColor = '#00ff88';
+    badge.style.color       = '#00ff88';
+    badge.style.background  = 'rgba(0,255,136,0.08)';
+    bar.style.background    = 'linear-gradient(90deg,#00cc66,#00ff88)';
+  } else {
+    lbl.textContent = '$' + currentMC.toLocaleString() + ' / $50K';
+    lbl.style.color = 'var(--gold)';
+  }
+}
+
+// Simulate MC with a placeholder — replace with real DexScreener API after launch
+// Format: fetch MC from DexScreener using your CA
+async function fetchMCFromDex() {
+  const CA = document.getElementById('caAddress') ? 
+             document.getElementById('caAddress').textContent.trim() : null;
+  if (!CA || CA.includes('LAUNCHING') || CA.length < 30) return;
+  try {
+    const res  = await fetch('https://api.dexscreener.com/latest/dex/tokens/' + CA);
+    const data = await res.json();
+    const pair = data.pairs && data.pairs[0];
+    if (pair && pair.fdv) {
+      updateMCProgress(Math.round(pair.fdv));
+    }
+  } catch(e) {}
+}
+
+fetchMCFromDex();
+setInterval(fetchMCFromDex, 30000); // refresh every 30s
+
+
+
+// ── MILESTONE TRACKER ──────────────────────────────────────────────────
+const MILESTONE_TARGETS = [0, 10000, 50000, 100000, 1000000];
+const MILESTONE_IDS      = [1, 2, 3, 4, 5];
+
+function updateMilestones(mcUSD) {
+  let currentMC = mcUSD || 0;
+  let display = currentMC >= 1000000 ? (currentMC/1000000).toFixed(2)+'M'
+              : currentMC >= 1000    ? (currentMC/1000).toFixed(1)+'K'
+              : '$'+currentMC.toFixed(0);
+  const el = document.getElementById('mileCurrentMC');
+  if (el) el.textContent = '$'+display;
+
+  MILESTONE_TARGETS.forEach((target, i) => {
+    const circle = document.getElementById('mnode'+(i+1));
+    const cap    = document.getElementById('mcap'+(i+1));
+    if (!circle || !cap) return;
+    if (currentMC >= target) {
+      circle.classList.add('done'); circle.classList.remove('active');
+      cap.classList.add('done');    cap.classList.remove('active');
+    } else if (currentMC >= (MILESTONE_TARGETS[i-1]||0)) {
+      circle.classList.add('active'); circle.classList.remove('done');
+      cap.classList.add('active');    cap.classList.remove('done');
+    }
+  });
+
+  // 🎉 $50K milestone hit — trigger mystery box popup on game page
+  if (currentMC >= 50000 && !sessionStorage.getItem('50k_celebrated')) {
+    sessionStorage.setItem('50k_celebrated','1');
+    if (typeof showMysteryBoxMilestone === 'function') showMysteryBoxMilestone();
+  }
+}
+
+// Simulate MC from price * supply (replace with real API after launch)
+(function tickMilestone(){
+  const priceEl = document.getElementById('tkPrice');
+  if (priceEl) {
+    const price = parseFloat(priceEl.textContent.replace('$','')) || 0;
+    updateMilestones(price * 1_000_000_000);
+  } else {
+    updateMilestones(0); // landing page default
+  }
+  setTimeout(tickMilestone, 10000);
+})();
+
 </script>
 </body>
 </html>
