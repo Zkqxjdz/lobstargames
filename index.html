@@ -1,0 +1,838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LOBSTAR GAMES — The Degen Boss of Crypto</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Share+Tech+Mono&family=Permanent+Marker&display=swap" rel="stylesheet">
+<style>
+:root{
+  --gold:#FFB800;--gold2:#FFD700;--gold3:#cc8800;
+  --red:#ff2200;--red2:#cc1100;--orange:#ff6600;
+  --bg:#030303;--bg2:#080808;--bg3:#0f0f0f;
+  --text:#f0d9a0;--dim:#7a6040;--white:#fff8ee;
+  --green:#00ff88;--cyan:#00ccff;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);font-family:'Oswald',sans-serif;color:var(--text);overflow-x:hidden;cursor:default;}
+
+/* ── CUSTOM CURSOR ── */
+body{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='5' fill='%23FFB800' opacity='0.8'/%3E%3C/svg%3E") 12 12, crosshair;}
+
+/* ── NOISE OVERLAY ── */
+body::before{content:'';position:fixed;inset:0;z-index:1000;pointer-events:none;opacity:0.03;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px;}
+::-webkit-scrollbar-track{background:#050505;}
+::-webkit-scrollbar-thumb{background:var(--gold3);border-radius:3px;}
+
+/* ════════════════════════════
+   NAV
+════════════════════════════ */
+nav{position:fixed;top:0;left:0;right:0;z-index:500;
+  background:rgba(3,3,3,0.92);border-bottom:1px solid rgba(255,184,0,0.2);
+  backdrop-filter:blur(10px);padding:0 24px;
+  display:flex;align-items:center;justify-content:space-between;height:58px;}
+.nav-logo{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;
+  background:linear-gradient(90deg,#fff5cc,#FFB800,#cc6600);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 10px rgba(255,140,0,0.5));}
+.nav-links{display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
+.nav-links a{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;
+  color:var(--dim);text-decoration:none;padding:5px 10px;transition:color .2s;}
+.nav-links a:hover{color:var(--gold);}
+.ca-pill{display:flex;align-items:center;gap:8px;
+  background:rgba(255,184,0,0.07);border:1px solid rgba(255,184,0,0.25);
+  border-radius:4px;padding:5px 12px;font-family:'Share Tech Mono',monospace;font-size:11px;
+  color:var(--gold);cursor:pointer;transition:all .2s;}
+.ca-pill:hover{background:rgba(255,184,0,0.15);border-color:var(--gold);}
+.ca-pill .ca-label{color:var(--dim);font-size:9px;letter-spacing:2px;display:block;margin-bottom:2px;}
+#caText{max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.copy-icon{font-size:14px;opacity:0.6;}
+.btn-buy{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;
+  border:1px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;
+  padding:8px 18px;border-radius:3px;cursor:pointer;transition:all .2s;
+  box-shadow:0 0 15px rgba(255,100,0,0.3);}
+.btn-buy:hover{background:linear-gradient(180deg,#ee6600,#aa3300);box-shadow:0 0 25px rgba(255,120,0,0.6);transform:scale(1.04);}
+
+/* ════════════════════════════
+   HERO
+════════════════════════════ */
+.hero{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  position:relative;overflow:hidden;padding-top:58px;}
+
+/* Fire background */
+.hero-bg{position:absolute;inset:0;z-index:0;
+  background:
+    radial-gradient(ellipse at 50% 100%,rgba(255,80,0,0.35) 0%,transparent 55%),
+    radial-gradient(ellipse at 20% 60%,rgba(200,40,0,0.2) 0%,transparent 40%),
+    radial-gradient(ellipse at 80% 60%,rgba(200,40,0,0.2) 0%,transparent 40%),
+    radial-gradient(ellipse at 50% 40%,rgba(30,10,0,0.8) 0%,transparent 60%),
+    var(--bg);}
+.fire-particles{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;}
+.fp{position:absolute;bottom:-20px;border-radius:50% 50% 20% 20%;
+  animation:fireRise linear infinite;opacity:0;}
+@keyframes fireRise{
+  0%{transform:translateY(0) scaleX(1);opacity:0.8;}
+  50%{opacity:0.5;transform:translateY(-40vh) scaleX(0.7) rotate(5deg);}
+  100%{transform:translateY(-80vh) scaleX(0.3);opacity:0;}
+}
+.grid-lines{position:absolute;inset:0;z-index:1;pointer-events:none;
+  background-image:
+    linear-gradient(rgba(255,184,0,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,184,0,0.04) 1px,transparent 1px);
+  background-size:60px 60px;}
+
+.hero-content{position:relative;z-index:10;text-align:center;padding:20px;}
+
+/* Big lobster emoji art */
+.lobster-art{font-size:clamp(80px,12vw,140px);line-height:1;
+  filter:drop-shadow(0 0 40px rgba(255,80,0,0.6)) drop-shadow(0 0 80px rgba(255,140,0,0.3));
+  animation:lobFloat 3s ease-in-out infinite;}
+@keyframes lobFloat{0%,100%{transform:translateY(0) rotate(-2deg);}50%{transform:translateY(-12px) rotate(2deg);}}
+
+.hero-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:6px;
+  color:var(--orange);margin:10px 0 6px;text-transform:uppercase;
+  animation:fadeSlideUp .8s ease both;animation-delay:.1s;}
+
+.hero-title{font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(64px,12vw,130px);letter-spacing:4px;line-height:0.9;
+  background:linear-gradient(180deg,#ffffff 0%,#FFD700 30%,#FFB800 60%,#cc6600 100%);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  filter:drop-shadow(0 0 30px rgba(255,140,0,0.5));
+  animation:fadeSlideUp .8s ease both;animation-delay:.2s;}
+
+.hero-sub{font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,3vw,32px);
+  letter-spacing:8px;color:var(--red);margin:4px 0 16px;
+  animation:fadeSlideUp .8s ease both;animation-delay:.3s;}
+
+.hero-tagline{font-size:clamp(14px,2vw,18px);color:var(--text);max-width:600px;
+  margin:0 auto 28px;line-height:1.6;font-weight:400;
+  animation:fadeSlideUp .8s ease both;animation-delay:.4s;}
+
+.hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;
+  animation:fadeSlideUp .8s ease both;animation-delay:.5s;}
+.btn-hero-play{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;
+  border:2px solid #ff9900;font-family:'Bebas Neue',sans-serif;font-size:20px;
+  letter-spacing:3px;padding:16px 48px;border-radius:4px;cursor:pointer;
+  text-decoration:none;display:inline-block;
+  box-shadow:0 0 30px rgba(255,100,0,0.4);animation:heroPulse 2s ease-in-out infinite;}
+@keyframes heroPulse{0%,100%{box-shadow:0 0 25px rgba(255,100,0,0.35);}50%{box-shadow:0 0 55px rgba(255,160,0,0.65),0 0 15px rgba(255,220,0,0.3);}}
+.btn-hero-play:hover{background:linear-gradient(180deg,#ee6600,#aa3300);transform:scale(1.06);}
+.btn-hero-ca{background:rgba(255,184,0,0.08);color:var(--gold);
+  border:2px solid rgba(255,184,0,0.4);font-family:'Bebas Neue',sans-serif;font-size:18px;
+  letter-spacing:2px;padding:15px 32px;border-radius:4px;cursor:pointer;
+  text-decoration:none;display:inline-block;transition:all .2s;}
+.btn-hero-ca:hover{background:rgba(255,184,0,0.18);border-color:var(--gold);}
+
+.scroll-hint{position:absolute;bottom:28px;left:50%;transform:translateX(-50%);z-index:10;
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;color:var(--dim);
+  animation:bounce 2s ease-in-out infinite;display:flex;flex-direction:column;align-items:center;gap:6px;}
+@keyframes bounce{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(6px);}}
+
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* LIVE STATS BAR */
+.stats-bar{background:rgba(255,184,0,0.05);border-top:1px solid rgba(255,184,0,0.15);
+  border-bottom:1px solid rgba(255,184,0,0.15);padding:10px 0;
+  display:flex;justify-content:center;gap:0;flex-wrap:wrap;overflow:hidden;}
+.stat-item{padding:6px 28px;border-right:1px solid rgba(255,184,0,0.1);
+  text-align:center;flex-shrink:0;}
+.stat-item:last-child{border-right:none;}
+.stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);
+  filter:drop-shadow(0 0 8px rgba(255,184,0,0.3));}
+.stat-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--dim);letter-spacing:2px;}
+.stat-val.fire{color:var(--red);}
+.stat-val.green{color:var(--green);}
+
+/* ════════════════════════════
+   SECTION COMMONS
+════════════════════════════ */
+section{position:relative;z-index:2;}
+.section-inner{max-width:1100px;margin:0 auto;padding:80px 24px;}
+.sec-eyebrow{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:5px;
+  color:var(--orange);margin-bottom:8px;text-transform:uppercase;}
+.sec-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(42px,6vw,72px);
+  letter-spacing:3px;line-height:1;
+  background:linear-gradient(180deg,#fff5cc,#FFB800 50%,#cc6600);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px;}
+.sec-divider{width:80px;height:3px;background:linear-gradient(90deg,var(--red),var(--gold));
+  border-radius:2px;margin:12px 0 24px;}
+
+/* ════════════════════════════
+   ORIGIN STORY
+════════════════════════════ */
+.story-section{background:linear-gradient(180deg,var(--bg) 0%,rgba(20,8,0,0.9) 50%,var(--bg) 100%);}
+.story-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center;}
+@media(max-width:760px){.story-grid{grid-template-columns:1fr;gap:30px;}}
+
+.story-char{text-align:center;position:relative;}
+.story-char-emoji{font-size:clamp(100px,14vw,160px);
+  filter:drop-shadow(0 0 50px rgba(255,80,0,0.5));
+  animation:crimeFloat 4s ease-in-out infinite;}
+@keyframes crimeFloat{0%,100%{transform:rotate(-3deg) scale(1);}50%{transform:rotate(3deg) scale(1.03);}}
+.wanted-poster{background:rgba(255,184,0,0.05);border:2px solid rgba(255,184,0,0.3);
+  border-radius:4px;padding:16px;margin-top:16px;position:relative;}
+.wanted-poster::before{content:'★ LEGENDARY ★';position:absolute;top:-12px;left:50%;transform:translateX(-50%);
+  background:var(--bg);padding:0 10px;font-family:'Bebas Neue',sans-serif;
+  font-size:14px;letter-spacing:4px;color:var(--gold);}
+.poster-name{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--white);}
+.poster-alias{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--dim);margin:4px 0;}
+.poster-reward{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);
+  filter:drop-shadow(0 0 10px rgba(255,184,0,0.4));}
+.poster-crimes{font-size:11px;color:var(--dim);letter-spacing:1px;margin-top:6px;line-height:1.8;}
+
+.story-text{}
+.story-para{font-size:16px;color:var(--text);line-height:1.9;margin-bottom:18px;font-weight:400;}
+.story-para strong{color:var(--gold);font-weight:700;}
+.story-para em{color:var(--red);font-style:normal;font-weight:600;}
+.story-quote{background:rgba(255,80,0,0.08);border-left:4px solid var(--red);
+  padding:14px 20px;margin:20px 0;font-family:'Permanent Marker',cursive;
+  font-size:18px;color:var(--white);line-height:1.5;border-radius:0 4px 4px 0;}
+.story-bullets{list-style:none;display:flex;flex-direction:column;gap:8px;margin-top:16px;}
+.story-bullets li{display:flex;align-items:flex-start;gap:10px;font-size:14px;color:var(--text);}
+.story-bullets li::before{content:'🦞';flex-shrink:0;}
+
+/* ════════════════════════════
+   TOKENOMICS
+════════════════════════════ */
+.token-section{background:radial-gradient(ellipse at 50% 0%,rgba(180,60,0,0.12),transparent 60%),var(--bg2);}
+.token-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-top:30px;}
+.tcard{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.15);border-radius:6px;
+  padding:24px 20px;text-align:center;position:relative;overflow:hidden;
+  transition:transform .25s,box-shadow .25s;}
+.tcard:hover{transform:translateY(-4px);box-shadow:0 8px 30px rgba(255,100,0,0.15);}
+.tcard::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,184,0,0.04),transparent);pointer-events:none;}
+.tcard-icon{font-size:32px;margin-bottom:10px;}
+.tcard-val{font-family:'Bebas Neue',sans-serif;font-size:32px;color:var(--gold);
+  filter:drop-shadow(0 0 8px rgba(255,184,0,0.3));line-height:1;}
+.tcard-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:2px;color:var(--dim);margin-top:4px;}
+.tcard-sub{font-size:12px;color:var(--text);margin-top:8px;line-height:1.5;}
+.tcard.fire-card{border-color:rgba(255,50,0,0.3);background:rgba(255,30,0,0.06);}
+.tcard.fire-card .tcard-val{color:var(--red);}
+
+/* BURN MECHANIC EXPLAINER */
+.burn-explain{background:rgba(255,30,0,0.06);border:1px solid rgba(255,50,0,0.25);
+  border-radius:6px;padding:28px 30px;margin-top:24px;}
+.burn-explain-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:3px;
+  color:var(--red);margin-bottom:14px;}
+.burn-steps{display:flex;gap:0;flex-wrap:wrap;justify-content:space-around;align-items:center;}
+.burn-step{text-align:center;padding:12px 16px;flex:1;min-width:140px;}
+.bstep-icon{font-size:28px;margin-bottom:6px;}
+.bstep-title{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold);}
+.bstep-text{font-size:12px;color:var(--dim);line-height:1.5;margin-top:4px;}
+.burn-arrow{font-size:22px;color:var(--orange);padding:0 4px;}
+
+/* ════════════════════════════
+   GAMES SECTION
+════════════════════════════ */
+.games-section{background:var(--bg);}
+.games-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:30px;}
+.game-card{background:var(--bg3);border:1px solid rgba(255,184,0,0.15);border-radius:6px;
+  overflow:hidden;transition:transform .25s,box-shadow .25s;cursor:pointer;text-decoration:none;
+  display:block;}
+.game-card:hover{transform:translateY(-5px);box-shadow:0 12px 40px rgba(255,100,0,0.2);}
+.game-card-banner{height:140px;display:flex;align-items:center;justify-content:center;
+  font-size:60px;position:relative;overflow:hidden;}
+.gc-bj{background:radial-gradient(ellipse at 50% 70%,rgba(0,80,20,0.6),var(--bg3));}
+.gc-dice{background:radial-gradient(ellipse at 50% 70%,rgba(80,0,80,0.6),var(--bg3));}
+.gc-coin{background:radial-gradient(ellipse at 50% 70%,rgba(180,120,0,0.5),var(--bg3));}
+.gc-slots{background:radial-gradient(ellipse at 50% 70%,rgba(0,60,120,0.5),var(--bg3));}
+.game-card-body{padding:16px;}
+.gc-title{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:2px;color:var(--white);}
+.gc-desc{font-size:13px;color:var(--dim);margin-top:4px;line-height:1.5;}
+.gc-badge{display:inline-block;font-family:'Share Tech Mono',monospace;font-size:9px;
+  letter-spacing:2px;padding:3px 8px;border-radius:2px;margin-top:8px;}
+.badge-live{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green);}
+.badge-soon{background:rgba(255,184,0,0.08);border:1px solid rgba(255,184,0,0.2);color:var(--gold);}
+.badge-burn{background:rgba(255,50,0,0.1);border:1px solid rgba(255,50,0,0.3);color:var(--red);}
+
+/* ════════════════════════════
+   ROADMAP
+════════════════════════════ */
+.road-section{background:rgba(8,4,0,0.95);}
+.road-list{display:flex;flex-direction:column;gap:2px;margin-top:30px;}
+.road-item{display:grid;grid-template-columns:80px 1fr;gap:20px;align-items:start;
+  padding:20px 0;border-bottom:1px solid rgba(255,184,0,0.07);}
+.road-item:last-child{border-bottom:none;}
+.road-phase{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:2px;text-align:center;}
+.rp-done{color:var(--green);}
+.rp-now{color:var(--gold);animation:rpPulse 2s ease-in-out infinite;}
+@keyframes rpPulse{0%,100%{filter:drop-shadow(0 0 5px rgba(255,184,0,0.3));}50%{filter:drop-shadow(0 0 14px rgba(255,184,0,0.7));}}
+.rp-soon{color:var(--dim);}
+.road-content{}
+.road-title{font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:2px;color:var(--white);}
+.road-items{list-style:none;margin-top:6px;display:flex;flex-direction:column;gap:5px;}
+.road-items li{font-size:13px;color:var(--dim);display:flex;align-items:center;gap:8px;}
+.road-items li.done{color:var(--text);}
+.road-items li.done::before{content:'✓';color:var(--green);}
+.road-items li.now::before{content:'▶';color:var(--gold);}
+.road-items li.soon::before{content:'◦';color:var(--dim);}
+
+/* ════════════════════════════
+   CTA / BUY SECTION
+════════════════════════════ */
+.buy-section{
+  background:radial-gradient(ellipse at 50% 0%,rgba(200,60,0,0.2),transparent 50%),var(--bg);
+  text-align:center;}
+.buy-inner{max-width:700px;margin:0 auto;padding:80px 24px;}
+.buy-lobster{font-size:80px;margin-bottom:10px;
+  filter:drop-shadow(0 0 30px rgba(255,80,0,0.5));
+  animation:lobFloat 3s ease-in-out infinite;}
+.buy-title{font-family:'Bebas Neue',sans-serif;font-size:clamp(36px,6vw,64px);
+  letter-spacing:4px;color:var(--white);margin-bottom:8px;}
+.buy-sub{font-size:16px;color:var(--text);margin-bottom:30px;line-height:1.7;}
+
+.ca-box{background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.3);
+  border-radius:6px;padding:16px 20px;margin-bottom:24px;cursor:pointer;transition:all .2s;}
+.ca-box:hover{background:rgba(255,184,0,0.1);border-color:var(--gold);}
+.ca-box-label{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:3px;
+  color:var(--dim);margin-bottom:6px;}
+.ca-box-addr{font-family:'Share Tech Mono',monospace;font-size:clamp(11px,2vw,15px);
+  color:var(--gold);word-break:break-all;line-height:1.6;}
+.ca-box-hint{font-size:11px;color:var(--dim);margin-top:6px;}
+.copy-toast{display:none;color:var(--green);font-family:'Share Tech Mono',monospace;font-size:11px;margin-top:6px;}
+
+.buy-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin-bottom:24px;}
+.btn-pumpfun{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;
+  border:2px solid #ff9900;font-family:'Bebas Neue',sans-serif;font-size:22px;
+  letter-spacing:3px;padding:18px 52px;border-radius:4px;cursor:pointer;
+  text-decoration:none;display:inline-block;
+  box-shadow:0 0 35px rgba(255,100,0,0.4);animation:heroPulse 2s ease-in-out infinite;}
+.btn-pumpfun:hover{transform:scale(1.05);}
+.btn-dex{background:rgba(0,204,136,0.08);color:var(--green);border:2px solid rgba(0,255,136,0.3);
+  font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;
+  padding:17px 36px;border-radius:4px;cursor:pointer;text-decoration:none;
+  display:inline-block;transition:all .2s;}
+.btn-dex:hover{background:rgba(0,255,136,0.15);border-color:var(--green);}
+
+.share-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.btn-share{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);
+  color:var(--text);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;
+  padding:10px 20px;border-radius:3px;cursor:pointer;text-decoration:none;
+  display:inline-block;transition:all .2s;}
+.btn-share:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.3);}
+.btn-share.x-btn{background:rgba(0,0,0,0.5);border-color:rgba(255,255,255,0.2);}
+.btn-share.tg-btn{background:rgba(0,120,180,0.15);border-color:rgba(0,150,220,0.3);color:#4fc3f7;}
+
+/* ════════════════════════════
+   COMMUNITY / FOOTER
+════════════════════════════ */
+.community-section{background:var(--bg2);border-top:1px solid rgba(255,184,0,0.1);}
+.community-grid{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:24px;}
+.comm-card{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:5px;
+  padding:20px 28px;text-align:center;text-decoration:none;flex:1;min-width:160px;max-width:200px;
+  transition:all .2s;}
+.comm-card:hover{background:rgba(255,184,0,0.1);border-color:rgba(255,184,0,0.35);transform:translateY(-3px);}
+.comm-icon{font-size:30px;margin-bottom:8px;}
+.comm-name{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;color:var(--gold);}
+.comm-desc{font-size:11px;color:var(--dim);margin-top:3px;}
+
+footer{background:var(--bg);border-top:1px solid rgba(255,184,0,0.1);
+  padding:24px;text-align:center;}
+.footer-logo{font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;
+  background:linear-gradient(90deg,#FFB800,#cc6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  margin-bottom:8px;}
+.footer-disc{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim);
+  max-width:600px;margin:0 auto;line-height:1.8;letter-spacing:0.5px;}
+.footer-links{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;margin:12px 0;}
+.footer-links a{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;
+  color:var(--dim);text-decoration:none;transition:color .2s;}
+.footer-links a:hover{color:var(--gold);}
+
+/* MOBILE */
+@media(max-width:600px){
+  .nav-links a{display:none;}
+  .nav-links{gap:6px;}
+  #caText{max-width:80px;}
+  .stat-item{padding:5px 14px;}
+  .burn-arrow{display:none;}
+}
+
+/* SCROLL REVEAL */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:translateY(0);}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">L★BSTAR</div>
+  <div class="nav-links">
+    <a href="#story">STORY</a>
+    <a href="#tokenomics">TOKENOMICS</a>
+    <a href="#games">GAMES</a>
+    <a href="#roadmap">ROADMAP</a>
+    <div class="ca-pill" onclick="copyCA()">
+      <span class="ca-label">CA</span>
+      <span id="caText">LAUNCHING SOON ON PUMP.FUN</span>
+      <span class="copy-icon">⎘</span>
+    </div>
+    <button class="btn-buy" onclick="window.open('https://pump.fun','_blank')">BUY $LOBSTAR</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-bg"></div>
+  <div class="fire-particles" id="fireParticles"></div>
+  <div class="grid-lines"></div>
+  <div class="hero-content">
+    <div class="lobster-art">🦞</div>
+    <div class="hero-eyebrow">THE ORIGINAL DEGEN BOSS OF SOLANA</div>
+    <div class="hero-title">LOBSTAR<br>GAMES</div>
+    <div class="hero-sub">BURN TO EARN • PLAY TO WIN</div>
+    <div class="hero-tagline">
+      He came from the bottom of the ocean. He climbed out of the pot.<br>
+      Now he runs the most degenerate casino on Solana.
+      <strong style="color:var(--gold)">Every loss burns supply. Every win builds the legend.</strong>
+    </div>
+    <div class="hero-btns">
+      <a href="https://lobstargames.win/lobstar-games.html" class="btn-hero-play">🃏 PLAY NOW — FREE</a>
+      <a href="#buy" class="btn-hero-ca">BUY $LOBSTAR ★</a>
+    </div>
+  </div>
+  <div class="scroll-hint">
+    <span>SCROLL DOWN</span>
+    <span>▼</span>
+  </div>
+</section>
+
+<!-- LIVE STATS -->
+<div class="stats-bar">
+  <div class="stat-item"><div class="stat-val green" id="livePlayers">247</div><div class="stat-lbl">LIVE PLAYERS</div></div>
+  <div class="stat-item"><div class="stat-val" id="liveSupply">1,000,000,000</div><div class="stat-lbl">$LOBSTAR SUPPLY</div></div>
+  <div class="stat-item"><div class="stat-val fire" id="liveBurned">0</div><div class="stat-lbl">TOKENS BURNED 🔥</div></div>
+  <div class="stat-item"><div class="stat-val" id="liveHolders">—</div><div class="stat-lbl">HOLDERS</div></div>
+  <div class="stat-item"><div class="stat-val" id="liveGames">4,821</div><div class="stat-lbl">GAMES PLAYED</div></div>
+  <div class="stat-item"><div class="stat-val green" id="livePrice">TO THE MOON 🚀</div><div class="stat-lbl">PRICE VIBES</div></div>
+</div>
+
+<!-- ORIGIN STORY -->
+<section class="story-section" id="story">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-eyebrow">THE LEGEND</div>
+      <div class="sec-title">THE ORIGIN STORY</div>
+      <div class="sec-divider"></div>
+    </div>
+    <div class="story-grid">
+      <div class="story-char reveal">
+        <div class="story-char-emoji">🦞</div>
+        <div class="wanted-poster">
+          <div class="poster-name">THE LOBSTAR</div>
+          <div class="poster-alias">a.k.a "RED CLAW" | "THE SHELL"</div>
+          <div class="poster-reward">$LOBSTAR</div>
+          <div class="poster-crimes">
+            CHARGES: Running a degen casino ✓<br>
+            Making degens very happy ✓<br>
+            Burning the supply for sport ✓<br>
+            Looking too fresh in a suit ✓
+          </div>
+        </div>
+      </div>
+      <div class="story-text reveal">
+        <p class="story-para">
+          Deep beneath the <strong>cold waters of the crypto ocean</strong>, there lived a lobster who refused to be boiled. While other crabs were sideways-walking into rug pulls and aping into dead memecoins, <em>THE LOBSTAR</em> was watching. Learning. Plotting.
+        </p>
+        <div class="story-quote">
+          "They tried to cook me. I cooked THEM instead."<br>
+          — The Lobstar, allegedly
+        </div>
+        <p class="story-para">
+          One stormy night in <strong>2025</strong>, a wallet appeared on pump.fun. No VC backing. No insider allocation. No team tokens. Just a <strong>gangster lobster in a suit</strong>, a briefcase full of $SOL, and a dream to run the most transparent, most degenerate, most <em>deflationary</em> gaming token in Solana history.
+        </p>
+        <p class="story-para">
+          The rules are simple: <strong>play the games, lose tokens = they burn forever.</strong> Win, and you climb the leaderboard. The supply shrinks with every hand dealt. The price goes up. The legend grows.
+        </p>
+        <ul class="story-bullets">
+          <li>No team allocation — 100% launched on pump.fun</li>
+          <li>Every game loss permanently burns $LOBSTAR supply</li>
+          <li>Leaderboard winners get community recognition</li>
+          <li>The more you play, the more deflationary it gets</li>
+          <li>Built by degens, for degens — on Solana</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TOKENOMICS -->
+<section class="token-section" id="tokenomics">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-eyebrow">THE NUMBERS</div>
+      <div class="sec-title">TOKENOMICS</div>
+      <div class="sec-divider"></div>
+      <p style="color:var(--text);max-width:600px;font-size:15px;line-height:1.7;margin-bottom:10px;">
+        Clean. Simple. Deflationary. No BS. The Lobstar doesn't need complicated mechanics — <strong style="color:var(--gold)">he just burns what he takes.</strong>
+      </p>
+    </div>
+    <div class="token-grid reveal">
+      <div class="tcard">
+        <div class="tcard-icon">💰</div>
+        <div class="tcard-val">1B</div>
+        <div class="tcard-lbl">TOTAL SUPPLY</div>
+        <div class="tcard-sub">Fixed. No minting. Ever. The Lobstar doesn't print — he burns.</div>
+      </div>
+      <div class="tcard fire-card">
+        <div class="tcard-icon">🔥</div>
+        <div class="tcard-val" id="tkBurnedBig">0</div>
+        <div class="tcard-lbl">BURNED FOREVER</div>
+        <div class="tcard-sub">Every game loss = permanent supply reduction. Watch the number grow.</div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-icon">🎰</div>
+        <div class="tcard-val">100%</div>
+        <div class="tcard-lbl">PUMP.FUN LAUNCH</div>
+        <div class="tcard-sub">Fair launch. No presale. No VCs. No team wallet. Just vibes and fire.</div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-icon">🏆</div>
+        <div class="tcard-val">0%</div>
+        <div class="tcard-lbl">TEAM ALLOCATION</div>
+        <div class="tcard-sub">The Lobstar takes nothing from the supply. He earns it at the table like everyone else.</div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-icon">🃏</div>
+        <div class="tcard-val">5</div>
+        <div class="tcard-lbl">GAMES AT LAUNCH</div>
+        <div class="tcard-sub">Blackjack live. Dice, Coin Flip, Crash & Slots coming. All burn on loss.</div>
+      </div>
+      <div class="tcard">
+        <div class="tcard-icon">⚡</div>
+        <div class="tcard-val">SOL</div>
+        <div class="tcard-lbl">BLOCKCHAIN</div>
+        <div class="tcard-sub">Solana. Fast, cheap, built for degens. Pump.fun compatible from day one.</div>
+      </div>
+    </div>
+
+    <div class="burn-explain reveal">
+      <div class="burn-explain-title">🔥 HOW THE BURN WORKS</div>
+      <div class="burn-steps">
+        <div class="burn-step">
+          <div class="bstep-icon">🎮</div>
+          <div class="bstep-title">PLAY</div>
+          <div class="bstep-text">Connect & bet $LOBSTAR tokens on any casino game</div>
+        </div>
+        <div class="burn-arrow">→</div>
+        <div class="burn-step">
+          <div class="bstep-icon">📉</div>
+          <div class="bstep-title">LOSE</div>
+          <div class="bstep-text">Lost tokens sent directly to burn address. Gone. Forever.</div>
+        </div>
+        <div class="burn-arrow">→</div>
+        <div class="burn-step">
+          <div class="bstep-icon">🔥</div>
+          <div class="bstep-title">BURN</div>
+          <div class="bstep-text">Supply shrinks. Each token becomes more scarce. Verified on-chain.</div>
+        </div>
+        <div class="burn-arrow">→</div>
+        <div class="burn-step">
+          <div class="bstep-icon">📈</div>
+          <div class="bstep-title">PUMP</div>
+          <div class="bstep-text">Less supply + more players = deflationary pressure = 🚀</div>
+        </div>
+        <div class="burn-arrow">→</div>
+        <div class="burn-step">
+          <div class="bstep-icon">🏆</div>
+          <div class="bstep-title">WIN</div>
+          <div class="bstep-text">Leaderboard winners get clout, recognition and the bag</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- GAMES -->
+<section class="games-section" id="games">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-eyebrow">THE CASINO</div>
+      <div class="sec-title">LOBSTAR GAMES</div>
+      <div class="sec-divider"></div>
+      <p style="color:var(--text);font-size:15px;line-height:1.7;max-width:600px;margin-bottom:10px;">
+        The Lobstar's casino never closes. Play, burn, earn. Every game is a transaction. Every loss feeds the deflationary engine.
+      </p>
+    </div>
+    <div class="games-grid reveal">
+      <a href="lobstar-games.html" class="game-card">
+        <div class="game-card-banner gc-bj">🃏</div>
+        <div class="game-card-body">
+          <div class="gc-title">LOBSTAR BLACKJACK</div>
+          <div class="gc-desc">Classic 21 with a twist — hit, stand, split pairs. Losses burn the supply. Blackjack pays 2.5x.</div>
+          <span class="gc-badge badge-live">● LIVE NOW</span>
+          <span class="gc-badge badge-burn">🔥 BURN ON LOSS</span>
+        </div>
+      </a>
+      <div class="game-card" style="cursor:default">
+        <div class="game-card-banner gc-dice">🎲</div>
+        <div class="game-card-body">
+          <div class="gc-title">CRAB DICE</div>
+          <div class="gc-desc">Roll over/under with up to 100x multiplier. High risk, maximum burn, insane rewards.</div>
+          <span class="gc-badge badge-soon">⏳ COMING SOON</span>
+          <span class="gc-badge badge-burn">🔥 BURN ON LOSS</span>
+        </div>
+      </div>
+      <div class="game-card" style="cursor:default">
+        <div class="game-card-banner gc-coin">🪙</div>
+        <div class="game-card-body">
+          <div class="gc-title">SHELL OR NO SHELL</div>
+          <div class="gc-desc">50/50 coin flip. Double your tokens or watch them burn. The Lobstar loves simplicity.</div>
+          <span class="gc-badge badge-soon">⏳ COMING SOON</span>
+          <span class="gc-badge badge-burn">🔥 BURN ON LOSS</span>
+        </div>
+      </div>
+      <div class="game-card" style="cursor:default">
+        <div class="game-card-banner gc-slots" style="background:radial-gradient(ellipse at 50% 70%,rgba(150,0,0,0.6),var(--bg3))">📈</div>
+        <div class="game-card-body">
+          <div class="gc-title">LOBSTAR CRASH</div>
+          <div class="gc-desc">Rocket takes off. Cash out before it crashes. The Lobstar always bails at 2x — will you?</div>
+          <span class="gc-badge badge-soon">⏳ COMING SOON</span>
+          <span class="gc-badge badge-burn">🔥 BURN ON LOSS</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="road-section" id="roadmap">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="sec-eyebrow">THE PLAN</div>
+      <div class="sec-title">ROADMAP</div>
+      <div class="sec-divider"></div>
+      <p style="color:var(--dim);font-size:13px;font-family:'Share Tech Mono',monospace;margin-bottom:10px;">
+        * roadmap subject to rug pulls by market conditions but not by us lol
+      </p>
+    </div>
+    <div class="road-list reveal">
+      <div class="road-item">
+        <div class="road-phase rp-done">P1</div>
+        <div class="road-content">
+          <div class="road-title">🦞 THE LOBSTAR AWAKENS</div>
+          <ul class="road-items">
+            <li class="done">Build LOBSTAR GAMES casino (Blackjack live)</li>
+            <li class="done">Design token branding & lore</li>
+            <li class="done">Build burn mechanic into gameplay</li>
+            <li class="done">Launch website + leaderboard</li>
+          </ul>
+        </div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase rp-now">P2</div>
+        <div class="road-content">
+          <div class="road-title">🚀 THE PUMP.FUN HEIST</div>
+          <ul class="road-items">
+            <li class="now">Launch $LOBSTAR on pump.fun with 10-15K SOL floor bundle</li>
+            <li class="now">CA embedded in game — live stats from chain</li>
+            <li class="now">Twitter/X share score campaign</li>
+            <li class="now">Referral system — bring frens, earn chips</li>
+            <li class="now">Phantom wallet connect for real burns</li>
+          </ul>
+        </div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase rp-soon">P3</div>
+        <div class="road-content">
+          <div class="road-title">🎰 THE CASINO EXPANDS</div>
+          <ul class="road-items">
+            <li class="soon">Crab Dice game live</li>
+            <li class="soon">Shell or No Shell coin flip</li>
+            <li class="soon">LOBSTAR Crash game</li>
+            <li class="soon">Daily/weekly tournaments with prize pool</li>
+            <li class="soon">Mobile-optimized PWA</li>
+          </ul>
+        </div>
+      </div>
+      <div class="road-item">
+        <div class="road-phase rp-soon">P4</div>
+        <div class="road-content">
+          <div class="road-title">🌊 THE EMPIRE</div>
+          <ul class="road-items">
+            <li class="soon">CEX listing campaign (when market cap fits)</li>
+            <li class="soon">LOBSTAR NFT collection for VIP table access</li>
+            <li class="soon">Cross-chain casino (ETH, BNB)</li>
+            <li class="soon">The Lobstar takes over DeFi entirely</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUY / CA SECTION -->
+<section class="buy-section" id="buy">
+  <div class="buy-inner">
+    <div class="buy-lobster reveal">🦞</div>
+    <div class="buy-title reveal">READY TO JOIN<br>THE FAMILY?</div>
+    <div class="buy-sub reveal">
+      Copy the CA. Buy on pump.fun. Play the games.<br>
+      Watch the supply burn. Watch the price move.<br>
+      <strong style="color:var(--gold)">The Lobstar always wins in the end.</strong>
+    </div>
+
+    <div class="ca-box reveal" onclick="copyCA()" id="caBigBox">
+      <div class="ca-box-label">CONTRACT ADDRESS (CA) — CLICK TO COPY</div>
+      <div class="ca-box-addr" id="caAddrBig">LAUNCHING SOON ON PUMP.FUN — CA WILL APPEAR HERE AT LAUNCH</div>
+      <div class="ca-box-hint">⎘ Click anywhere on this box to copy</div>
+      <div class="copy-toast" id="copyToast">✓ COPIED TO CLIPBOARD!</div>
+    </div>
+
+    <div class="buy-btns reveal">
+      <a href="https://pump.fun" target="_blank" class="btn-pumpfun">🚀 BUY ON PUMP.FUN</a>
+      <a href="https://dexscreener.com" target="_blank" class="btn-dex">📊 DEXSCREENER</a>
+    </div>
+
+    <div class="share-row reveal">
+      <a href="#" class="btn-share x-btn" onclick="shareTwitter()">𝕏 SHARE ON X</a>
+      <a href="https://x.com/LobstarGames" target="_blank" class="btn-share tg-btn">𝕏 FOLLOW @LOBSTARGAMES</a>
+      <a href="https://lobstargames.win/lobstar-games.html" class="btn-share">🃏 PLAY GAME</a>
+    </div>
+  </div>
+</section>
+
+<!-- COMMUNITY -->
+<section class="community-section">
+  <div class="section-inner" style="padding:50px 24px">
+    <div class="reveal" style="text-align:center;margin-bottom:20px">
+      <div class="sec-eyebrow">JOIN THE CREW</div>
+      <div class="sec-title" style="font-size:clamp(32px,5vw,52px)">THE LOBSTAR FAMILY</div>
+    </div>
+    <div class="community-grid reveal">
+      <a href="https://x.com/LobstarGames" target="_blank" class="comm-card">
+        <div class="comm-icon">𝕏</div>
+        <div class="comm-name">TWITTER/X</div>
+        <div class="comm-desc">Latest alpha, burns & degen calls</div>
+      </a>
+      <a href="https://t.me/LobstarGames" target="_blank" class="comm-card" style="display:none">
+        <div class="comm-icon">✈️</div>
+        <div class="comm-name">TELEGRAM</div>
+        <div class="comm-desc">Community chat & announcements</div>
+      </a>
+      <a href="https://pump.fun" target="_blank" class="comm-card">
+        <div class="comm-icon">🚀</div>
+        <div class="comm-name">PUMP.FUN</div>
+        <div class="comm-desc">Buy $LOBSTAR directly</div>
+      </a>
+      <a href="https://lobstargames.win/lobstar-games.html" class="comm-card">
+        <div class="comm-icon">🃏</div>
+        <div class="comm-name">PLAY GAME</div>
+        <div class="comm-desc">Burn tokens, climb leaderboard</div>
+      </a>
+      <a href="https://dexscreener.com" target="_blank" class="comm-card">
+        <div class="comm-icon">📊</div>
+        <div class="comm-name">CHART</div>
+        <div class="comm-desc">Track price & volume</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">L★BSTAR GAMES</div>
+  <div class="footer-links">
+    <a href="#home">HOME</a>
+    <a href="#story">STORY</a>
+    <a href="#tokenomics">TOKENOMICS</a>
+    <a href="#games">GAMES</a>
+    <a href="#roadmap">ROADMAP</a>
+    <a href="https://lobstargames.win/lobstar-games.html">PLAY</a>
+  </div>
+  <div class="footer-disc">
+    $LOBSTAR is a meme token with no intrinsic value or expectation of financial return. This is entertainment. 
+    Crypto is volatile — never invest more than you can afford to lose. The Lobstar is fictional (unfortunately). 
+    Not financial advice. Do your own research. The house always burns. 🦞🔥
+  </div>
+  <div style="margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--dim)">
+    © 2025 LOBSTAR GAMES • lobstargames.win • 𝕏 @LobstarGames • BUILT ON SOLANA • POWERED BY DEGENERACY
+  </div>
+</footer>
+
+<script>
+// ── CA ──
+const CA = 'LAUNCHING SOON — PASTE CA HERE AFTER PUMP.FUN LAUNCH';
+function copyCA(){
+  navigator.clipboard.writeText(CA).then(()=>{
+    const t=document.getElementById('copyToast');
+    t.style.display='block';
+    setTimeout(()=>t.style.display='none',2200);
+  }).catch(()=>{
+    alert('CA: '+CA);
+  });
+}
+
+// ── FIRE PARTICLES ──
+function spawnFire(){
+  const container=document.getElementById('fireParticles');
+  if(!container) return;
+  const fp=document.createElement('div');
+  fp.className='fp';
+  const size=Math.random()*30+10;
+  const colors=['rgba(255,80,0,','rgba(255,140,0,','rgba(255,200,0,','rgba(255,50,0,'];
+  const col=colors[Math.floor(Math.random()*colors.length)];
+  fp.style.cssText=`
+    left:${Math.random()*100}%;
+    width:${size}px;height:${size*1.4}px;
+    background:${col}0.7);
+    animation-duration:${Math.random()*2+2}s;
+    animation-delay:${Math.random()*2}s;
+  `;
+  container.appendChild(fp);
+  setTimeout(()=>fp.remove(), 4500);
+}
+setInterval(spawnFire,180);
+
+// ── LIVE STATS SIMULATION ──
+let simPlayers=247, simGames=4821, simBurned=0;
+function tickStats(){
+  simPlayers+=Math.floor(Math.random()*3)-1;
+  simPlayers=Math.max(180,simPlayers);
+  simGames+=Math.floor(Math.random()*4);
+  simBurned+=Math.floor(Math.random()*15000+2000);
+  document.getElementById('livePlayers').textContent=simPlayers.toLocaleString();
+  document.getElementById('liveGames').textContent=simGames.toLocaleString();
+  document.getElementById('liveBurned').textContent=fmtN(simBurned);
+  document.getElementById('tkBurnedBig').textContent=fmtN(simBurned);
+  // holders
+  document.getElementById('liveHolders').textContent=Math.floor(simPlayers*1.7+400).toLocaleString();
+}
+setInterval(tickStats,2500);
+tickStats();
+
+function fmtN(n){if(n>=1e9)return(n/1e9).toFixed(2)+'B';if(n>=1e6)return(n/1e6).toFixed(2)+'M';if(n>=1e3)return(n/1e3).toFixed(1)+'K';return n.toLocaleString();}
+
+// ── FUNNY PRICE ROTATOR ──
+const funnyPrices = [
+  'TO THE MOON 🚀','VERY SER 📈','NGMI → GMI','UP ONLY ↑↑','BUY THE DIP 🦞',
+  'PROBABLY FINE ✅','1000X SOON 🔥','TRUST THE CLAW','WAGMI FR FR','SEND IT 🚀'
+];
+let fpIdx = 0;
+setInterval(()=>{
+  fpIdx = (fpIdx+1) % funnyPrices.length;
+  document.getElementById('livePrice').textContent = funnyPrices[fpIdx];
+}, 3000);
+function shareTwitter(){
+  const txt=encodeURIComponent('🦞 Just played @LobstarGames — the most degenerate casino on Solana!\n\nEvery loss BURNS $LOBSTAR supply 🔥\n\n🎮 Play free: lobstargames.win\n📋 CA: '+CA+'\n\n#LOBSTAR #Solana #PumpFun #memecoins');
+  window.open('https://twitter.com/intent/tweet?text='+txt,'_blank');
+}
+
+// ── SCROLL REVEAL ──
+const obs=new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{if(e.isIntersecting){e.target.classList.add('visible');}});
+},{threshold:0.12});
+document.querySelectorAll('.reveal').forEach(el=>obs.observe(el));
+
+// ── TICKER scroll for nav CA ──
+const fullCA = CA;
+document.getElementById('caText').textContent = fullCA.length>22 ? fullCA.slice(0,10)+'...'+fullCA.slice(-6) : fullCA;
+document.getElementById('caAddrBig').textContent = fullCA;
+</script>
+</body>
+</html>
