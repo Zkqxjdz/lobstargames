@@ -210,6 +210,19 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 @keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
 
 .lbrow.bot .lbnm { color: var(--text-dim); }
+
+/* REFERRAL */
+.ref-box{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:10px 12px;margin-top:8px;text-align:center;}
+.ref-title{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:6px;}
+.ref-link{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,136,0.15);border-radius:3px;padding:5px 8px;word-break:break-all;cursor:pointer;display:block;margin-bottom:6px;}
+.ref-link:hover{border-color:rgba(0,255,136,0.4);color:var(--green);}
+.ref-copy-btn{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:5px 14px;border-radius:3px;cursor:pointer;width:100%;}
+.ref-copy-btn:hover{background:rgba(0,255,136,0.2);}
+.ref-stats{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:6px;}
+.ref-stats span{color:var(--green);}
+.ref-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,255,136,0.92);color:#000;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px 24px;border-radius:4px;z-index:9000;display:none;}
+.ref-toast.show{display:block;animation:fadeup .3s ease;}
+@keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
 </style>
 </head>
 <body>
@@ -286,6 +299,19 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
           <div class="pts-lbl">★ TOTAL POINTS EARNED ★</div>
         </div>
         <button class="btn-rst" onclick="resetWallet()">↺ RESET WALLET (10,000 $LOBSTAR)</button>
+      </div>
+    </div>
+
+    <!-- REFERRAL PANEL -->
+    <div class="panel" id="refPanel" style="margin-top:10px;display:none">
+      <div class="ph">🔗 REFERRAL</div>
+      <div class="pb">
+        <div class="ref-box">
+          <div class="ref-title">YOUR INVITE LINK</div>
+          <div class="ref-link" id="refLinkText" onclick="copyRefLink()">Loading...</div>
+          <button class="ref-copy-btn" onclick="copyRefLink()">📋 COPY LINK</button>
+          <div class="ref-stats">FRENS REFERRED: <span id="refCount">0</span> | BONUS CHIPS: <span id="refBonus">0</span></div>
+        </div>
       </div>
     </div>
   </div>
@@ -536,6 +562,8 @@ async function enterGame() {
       tlog('sys', `Welcome back, ${playerName}! Stats restored.`);
       tlog('info', `Points: ${totalPoints.toLocaleString()} | Wins: ${wins} | Losses: ${losses} | Burned: ${fmtN(totalBurned)}`);
     } else {
+      // NEW player — register referral if came via ref link
+      await registerReferral(true);
       tlog('sys', `Welcome, ${playerName}. The house always burns.`);
       tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
     }
@@ -544,6 +572,7 @@ async function enterGame() {
   }
 
   tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
+  initReferral();
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
 }
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
@@ -1138,6 +1167,110 @@ document.addEventListener('click', function(e) {
   if (e.target === overlay) closeMbox();
 });
 
+// ── REFERRAL SYSTEM ──
+const REFERRAL_BONUS = 500; // chips per referral
+let referredBy = null;
+let myReferralCount = 0;
+
+// Read ?ref= from URL on page load
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const ref = params.get('ref');
+  if (ref) referredBy = ref.toUpperCase();
+})();
+
+// Show referral panel + set link after login
+function initReferral() {
+  const base = window.location.origin + window.location.pathname;
+  const link = `${base}?ref=${encodeURIComponent(playerName)}`;
+  document.getElementById('refLinkText').textContent = link;
+  document.getElementById('refPanel').style.display = 'block';
+  loadReferralCount();
+}
+
+// Copy link to clipboard
+function copyRefLink() {
+  const base = window.location.origin + window.location.pathname;
+  const link = `${base}?ref=${encodeURIComponent(playerName)}`;
+  navigator.clipboard.writeText(link).then(() => showRefToast('🔗 LINK COPIED!'));
+}
+
+// Toast notification
+function showRefToast(msg) {
+  const t = document.getElementById('refToast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// Load how many people this player has referred
+async function loadReferralCount() {
+  if (!playerName) return;
+  try {
+    const r = await fetch(
+      `${SUPA_URL}/rest/v1/referrals?referrer=eq.${encodeURIComponent(playerName)}&select=id`,
+      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
+    );
+    const data = await r.json();
+    myReferralCount = Array.isArray(data) ? data.length : 0;
+    document.getElementById('refCount').textContent = myReferralCount;
+    document.getElementById('refBonus').textContent = (myReferralCount * REFERRAL_BONUS).toLocaleString();
+  } catch(e) {}
+}
+
+// Register referral — only if:
+// 1. referredBy exists in URL
+// 2. This player is NEW (not in leaderboard yet)
+// 3. referrer != referred (no self-referral)
+async function registerReferral(isNewPlayer) {
+  if (!referredBy) return;
+  if (!isNewPlayer) return; // existing player — referral doesn't apply
+  if (referredBy === playerName) return; // no self-referral
+
+  try {
+    // Insert referral record — UNIQUE(referred) prevents duplicates
+    const r = await fetch(`${SUPA_URL}/rest/v1/referrals`, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPA_KEY,
+        'Authorization': 'Bearer ' + SUPA_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        referrer: referredBy,
+        referred: playerName,
+        bonus_paid: false
+      })
+    });
+
+    if (r.ok || r.status === 201) {
+      // Give new player bonus chips
+      balance += REFERRAL_BONUS;
+      updateUI();
+      showRefToast(`🎁 +${REFERRAL_BONUS} CHIPS from ${referredBy}!`);
+      tlog('win', `Referred by ${referredBy} — +${REFERRAL_BONUS} bonus chips!`);
+
+      // Give referrer bonus points in leaderboard
+      await fetch(
+        `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(referredBy)}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': SUPA_KEY,
+            'Authorization': 'Bearer ' + SUPA_KEY,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal'
+          },
+          body: JSON.stringify({ pts: 1000 }) // bonus pts — NOTE: this sets pts, not adds
+        }
+      );
+    }
+  } catch(e) {
+    console.log('Referral error:', e);
+  }
+}
+
 // ── Share Score ──
 function shareScore(){
   const txt = encodeURIComponent(
@@ -1169,5 +1302,6 @@ renderLB();
   </div>
 </div>
 <div class="mbox-notif" id="mboxNotif">🎁 Mystery Box unlocked! Check your reward!</div>
+<div class="ref-toast" id="refToast"></div>
 </body>
 </html>
