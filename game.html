@@ -955,14 +955,20 @@ async function fetchRealPlayers() {
 
 async function saveScore() {
   if (!playerName) return;
-  const payload = {handle:playerName, pts:totalPoints, burned:totalBurned, wins:wins, losses:losses, games:wins+losses, updated_at:new Date().toISOString()};
+  const update = {pts:totalPoints, burned:totalBurned, wins:wins, losses:losses, games:wins+losses, updated_at:new Date().toISOString()};
   try {
+    // Always PATCH first — updates existing row
+    await fetch(
+      `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}`,
+      {method:'PATCH', headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'}, body:JSON.stringify(update)}
+    );
+    // Also POST with upsert — handles case where row doesn't exist yet
     await fetch(`${SUPA_URL}/rest/v1/leaderboard`, {
       method:'POST',
       headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
-      body:JSON.stringify(payload)
+      body:JSON.stringify({handle:playerName, ...update})
     });
-  } catch(e) {}
+  } catch(e) { console.log('saveScore error:', e); }
 }
 
 function growBotScores() {
