@@ -208,13 +208,22 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 </div>
 
 <header>
-  <div class="logo">L★BSTAR</div>
-  <div class="logo-sub">GAMES</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 6px;border-bottom:1px solid rgba(255,184,0,0.12);">
+    <a href="https://lobstargames.win" style="color:var(--text-dim);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;border:1px solid rgba(255,184,0,0.3);padding:7px 18px;border-radius:3px;background:rgba(255,184,0,0.04);">← HOME</a>
+    <div style="text-align:center;">
+      <div class="logo" style="font-size:clamp(26px,4vw,44px);line-height:1;">L★BSTAR</div>
+      <div class="logo-sub" style="font-size:11px;letter-spacing:8px;margin-top:-2px;">GAMES</div>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <a href="https://x.com/LobstarGames" target="_blank" style="color:var(--text-dim);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;border:1px solid rgba(255,184,0,0.3);padding:7px 14px;border-radius:3px;background:rgba(255,184,0,0.04);">𝕏 @LOBSTARGAMES</a>
+      <button onclick="shareScore()" style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;border:1px solid rgba(255,184,0,0.4);padding:7px 14px;border-radius:3px;background:rgba(255,184,0,0.08);cursor:pointer;">📣 SHARE SCORE</button>
+    </div>
+  </div>
   <div class="ticker-bar">
-    <div class="ticker-item">$LOBSTAR <span class="tv" id="tkPrice">$0.0042</span> <span class="tup" id="tkChange">+18.4%</span></div>
+    <div class="ticker-item">$LOBSTARGAMES <span class="tv" id="tkPrice">$0.0042</span> <span class="tup" id="tkChange">+18.4%</span></div>
     <div class="ticker-item">SUPPLY <span class="tv" id="tkSupply">1,000,000,000</span></div>
     <div class="ticker-item">BURNED <span class="tv tdn" id="tkBurned">0</span></div>
-    <div class="ticker-item">PLAYERS <span class="tv">?? LIVE</span></div>
+    <div class="ticker-item">PLAYERS <span class="tv">🔴 LIVE</span></div>
     <div class="ticker-item">BLOCK <span class="tv" id="tkBlock">294180422</span></div>
   </div>
 </header>
@@ -895,6 +904,19 @@ function startTicker() {
     el.textContent=(d>=0?'+':'')+d.toFixed(1)+'%';
     el.className=d>=0?'tup':'tdn';
   },3000);
+}
+
+// ── Share Score ──
+function shareScore(){
+  const txt = encodeURIComponent(
+    '🦞 Just played @LobstarGames!\n\n' +
+    '🏆 Points: ' + totalPoints.toLocaleString() + '\n' +
+    '✓ Wins: ' + wins + ' | ✗ Losses: ' + losses + '\n' +
+    '🔥 Burned: ' + fmtN(totalBurned) + ' $LOBSTARGAMES\n\n' +
+    'Every loss burns supply forever.\n' +
+    'Play now 👇\nlobstargames.win/game'
+  );
+  window.open('https://twitter.com/intent/tweet?text=' + txt, '_blank');
 }
 
 // Init
