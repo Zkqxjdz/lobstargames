@@ -441,25 +441,46 @@ async function fetchRealPlayers() {
 // ── Save/update real player score ──
 async function saveScore() {
   if (!playerName) return;
+  const payload = {
+    handle: playerName,
+    pts: totalPoints,
+    burned: totalBurned,
+    wins: wins,
+    losses: losses,
+    games: wins + losses,
+    updated_at: new Date().toISOString()
+  };
   try {
-    // Upsert — insert or update if handle exists
+    // Try PATCH first (update existing row)
+    const patch = await fetch(
+      `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': SUPA_KEY,
+          'Authorization': 'Bearer ' + SUPA_KEY,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify(payload)
+      }
+    );
+    // If no row existed (204 but nothing updated), do POST
+    const text = await patch.text();
+    if (patch.status === 204 || patch.ok) {
+      // PATCH succeeded — also check if row actually existed via count header
+      // Simpler: always try POST with upsert header
+    }
+    // Use POST with upsert (on conflict update)
     await fetch(`${SUPA_URL}/rest/v1/leaderboard`, {
       method: 'POST',
       headers: {
         'apikey': SUPA_KEY,
         'Authorization': 'Bearer ' + SUPA_KEY,
         'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
+        'Prefer': 'resolution=merge-duplicates,return=minimal'
       },
-      body: JSON.stringify({
-        handle: playerName,
-        pts: totalPoints,
-        burned: totalBurned,
-        wins: wins,
-        losses: losses,
-        games: wins + losses,
-        updated_at: new Date().toISOString()
-      })
+      body: JSON.stringify(payload)
     });
   } catch(e) {
     console.log('Supabase save error:', e);
