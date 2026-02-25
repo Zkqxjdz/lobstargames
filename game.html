@@ -194,7 +194,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .nenter{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid #ff7700;width:100%;font-size:17px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;padding:12px;border-radius:3px;cursor:pointer;}
 .nenter:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
 
-/* MYSTERY BOX OVERLAY */
+/* MYSTERY BOX */
 .mbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
 .mbox-overlay.show{opacity:1;pointer-events:all;}
 .mbox{background:var(--panel);border:2px solid rgba(138,43,226,0.5);border-radius:10px;padding:32px 36px;text-align:center;max-width:420px;width:92%;box-shadow:0 0 60px rgba(138,43,226,0.3);}
@@ -206,23 +206,54 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .mbox-trigger{font-family:'Share Tech Mono',monospace;font-size:10px;color:#9955cc;letter-spacing:2px;margin-bottom:16px;}
 .mbox-btn{background:linear-gradient(180deg,#6600cc,#440088);color:#fff;border:1px solid #aa44ff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:2px;padding:12px 40px;border-radius:4px;cursor:pointer;width:100%;}
 .mbox-btn:hover{background:linear-gradient(180deg,#8800ff,#5500aa);}
-.mbox-notif{position:fixed;bottom:24px;right:24px;background:rgba(138,43,226,0.9);border:1px solid #cc88ff;border-radius:8px;padding:14px 20px;font-family:'Share Tech Mono',monospace;font-size:12px;color:#fff;z-index:8000;display:none;animation:slideIn .4s ease;}
-@keyframes slideIn{from{transform:translateX(100px);opacity:0}to{transform:translateX(0);opacity:1}}
 
-.lbrow.bot .lbnm { color: var(--text-dim); }
-
-/* REFERRAL */
-.ref-box{background:rgba(0,255,136,0.04);border:1px solid rgba(0,255,136,0.2);border-radius:4px;padding:10px 12px;margin-top:8px;text-align:center;}
-.ref-title{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--green);margin-bottom:6px;}
-.ref-link{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);background:rgba(0,0,0,0.4);border:1px solid rgba(0,255,136,0.15);border-radius:3px;padding:5px 8px;word-break:break-all;cursor:pointer;display:block;margin-bottom:6px;}
-.ref-link:hover{border-color:rgba(0,255,136,0.4);color:var(--green);}
-.ref-copy-btn{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);color:var(--green);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:5px 14px;border-radius:3px;cursor:pointer;width:100%;}
-.ref-copy-btn:hover{background:rgba(0,255,136,0.2);}
-.ref-stats{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:6px;}
-.ref-stats span{color:var(--green);}
-.ref-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(0,255,136,0.92);color:#000;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px 24px;border-radius:4px;z-index:9000;display:none;}
+/* REFERRAL MODAL */
+.ref-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+.ref-overlay.show{display:flex;animation:pgin .25s ease;}
+.ref-modal{background:var(--panel);border:2px solid rgba(0,255,136,0.35);border-radius:8px;padding:28px 32px;max-width:440px;width:94%;box-shadow:0 0 50px rgba(0,255,136,0.15);text-align:center;}
+.ref-modal-title{font-family:'Bebas Neue',sans-serif;font-size:30px;letter-spacing:4px;color:var(--green);margin-bottom:6px;}
+.ref-modal-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:18px;line-height:1.8;}
+.ref-modal-sub span{color:var(--green);}
+.ref-stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.ref-stat{background:rgba(0,255,136,0.05);border:1px solid rgba(0,255,136,0.15);border-radius:4px;padding:10px;}
+.ref-stat-val{font-family:'Bebas Neue',sans-serif;font-size:26px;color:var(--green);}
+.ref-stat-lbl{font-size:9px;color:var(--text-dim);letter-spacing:1px;}
+.ref-link-box{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--gold);background:rgba(0,0,0,0.5);border:1px solid rgba(0,255,136,0.25);border-radius:4px;padding:10px 14px;word-break:break-all;margin-bottom:10px;text-align:left;cursor:pointer;}
+.ref-link-box:hover{border-color:rgba(0,255,136,0.5);}
+.ref-modal-btns{display:flex;gap:8px;margin-bottom:14px;}
+.ref-btn-copy{flex:1;background:linear-gradient(180deg,#006633,#003d1f);color:var(--green);border:1px solid rgba(0,255,136,0.4);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:10px;border-radius:3px;cursor:pointer;}
+.ref-btn-copy:hover{background:linear-gradient(180deg,#008844,#005522);}
+.ref-btn-x{flex:1;background:rgba(255,255,255,0.04);color:#fff;border:1px solid rgba(255,255,255,0.15);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:10px;border-radius:3px;cursor:pointer;}
+.ref-btn-x:hover{background:rgba(255,255,255,0.1);}
+.ref-rules{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);line-height:1.9;text-align:left;background:rgba(0,0,0,0.3);border-radius:4px;padding:10px 12px;margin-bottom:12px;}
+.ref-rules span{color:var(--green);}
+.ref-close{background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:8px 24px;border-radius:3px;cursor:pointer;width:100%;}
+.ref-close:hover{border-color:rgba(255,184,0,0.5);color:var(--gold);}
+.ref-toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%);background:rgba(0,255,136,0.95);color:#000;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px 24px;border-radius:4px;z-index:9999;display:none;}
 .ref-toast.show{display:block;animation:fadeup .3s ease;}
 @keyframes fadeup{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+.lbrow.bot .lbnm{color:var(--text-dim);}
+
+/* BANKRUPTCY OVERLAY */
+.broke-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.96);z-index:9998;display:none;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.broke-overlay.show{display:flex;animation:pgin .4s ease;}
+.broke-box{background:var(--panel);border:2px solid rgba(255,34,0,0.5);border-radius:10px;padding:36px 38px;text-align:center;max-width:440px;width:94%;box-shadow:0 0 80px rgba(255,34,0,0.25);}
+.broke-icon{font-size:64px;margin-bottom:10px;animation:shake .5s ease infinite alternate;}
+@keyframes shake{from{transform:rotate(-6deg)}to{transform:rotate(6deg)}}
+.broke-title{font-family:'Bebas Neue',sans-serif;font-size:48px;letter-spacing:5px;color:var(--red-glow);filter:drop-shadow(0 0 20px rgba(255,51,0,0.8));margin-bottom:4px;}
+.broke-sub{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--text-dim);margin-bottom:20px;line-height:1.8;}
+.broke-sub span{color:var(--red-glow);}
+.broke-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:22px;}
+.broke-stat{background:rgba(255,34,0,0.05);border:1px solid rgba(255,34,0,0.2);border-radius:4px;padding:10px 6px;}
+.broke-stat-val{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--red-glow);}
+.broke-stat-lbl{font-size:9px;color:var(--text-dim);letter-spacing:1px;}
+.broke-btns{display:flex;flex-direction:column;gap:8px;}
+.broke-claim-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:14px;border-radius:4px;cursor:pointer;animation:npulse 1s ease infinite;}
+.broke-claim-btn:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+.broke-share-btn{background:rgba(255,255,255,0.04);color:#fff;border:1px solid rgba(255,255,255,0.2);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:11px;border-radius:4px;cursor:pointer;}
+.broke-share-btn:hover{background:rgba(255,255,255,0.1);}
+.broke-ref-btn{background:rgba(0,255,136,0.06);color:var(--green);border:1px solid rgba(0,255,136,0.3);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px;border-radius:4px;cursor:pointer;}
+.broke-ref-btn:hover{background:rgba(0,255,136,0.12);}
 </style>
 </head>
 <body>
@@ -231,29 +262,20 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 <div class="noverlay" id="nameOverlay">
   <div class="nbox">
     <div class="ntitle">LOBSTAR GAMES</div>
-    <div class="nsub">ENTER YOUR X HANDLE TO PLAY</div>
+    <div class="nsub">ENTER THE CRYPTO UNDERGROUND</div>
     <input class="ninput" id="nameInput" placeholder="YOUR X HANDLE (e.g. @LobstarGames)" maxlength="16" autocomplete="off">
     <button class="nenter" onclick="enterGame()">ENTER THE GAME ★</button>
   </div>
 </div>
 
 <header>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 6px;border-bottom:1px solid rgba(255,184,0,0.12);">
-    <a href="https://lobstargames.win" style="color:var(--text-dim);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;border:1px solid rgba(255,184,0,0.3);padding:7px 18px;border-radius:3px;background:rgba(255,184,0,0.04);">← HOME</a>
-    <div style="text-align:center;">
-      <div class="logo" style="font-size:clamp(26px,4vw,44px);line-height:1;">L★BSTAR</div>
-      <div class="logo-sub" style="font-size:11px;letter-spacing:8px;margin-top:-2px;">GAMES</div>
-    </div>
-    <div style="display:flex;gap:8px;align-items:center;">
-      <a href="https://x.com/i/communities/2026705678774178004" target="_blank" style="color:var(--text-dim);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;border:1px solid rgba(255,184,0,0.3);padding:7px 14px;border-radius:3px;background:rgba(255,184,0,0.04);">𝕏 @LOBSTARGAMES</a>
-      <button onclick="shareScore()" style="color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;border:1px solid rgba(255,184,0,0.4);padding:7px 14px;border-radius:3px;background:rgba(255,184,0,0.08);cursor:pointer;">📣 SHARE SCORE</button>
-    </div>
-  </div>
+  <div class="logo">L★BSTAR</div>
+  <div class="logo-sub">GAMES</div>
   <div class="ticker-bar">
-    <div class="ticker-item">$LOBSTARGAMES <span class="tv" id="tkPrice">$0.0042</span> <span class="tup" id="tkChange">+18.4%</span></div>
+    <div class="ticker-item">$LOBSTAR <span class="tv" id="tkPrice">$0.0042</span> <span class="tup" id="tkChange">+18.4%</span></div>
     <div class="ticker-item">SUPPLY <span class="tv" id="tkSupply">1,000,000,000</span></div>
     <div class="ticker-item">BURNED <span class="tv tdn" id="tkBurned">0</span></div>
-    <div class="ticker-item">PLAYERS <span class="tv">🔴 LIVE</span></div>
+    <div class="ticker-item">PLAYERS <span class="tv"> LIVE</span></div>
     <div class="ticker-item">BLOCK <span class="tv" id="tkBlock">294180422</span></div>
   </div>
 </header>
@@ -274,7 +296,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
         </div>
         <div class="sstats">
           <div class="sbox"><div class="sv">1.00B</div><div class="sl">TOTAL</div></div>
-          <div class="sbox"><div class="sv" id="statBurned" style="color:var(--red-glow)">0</div><div class="sl">BURNED ??</div></div>
+          <div class="sbox"><div class="sv" id="statBurned" style="color:var(--red-glow)">0</div><div class="sl">BURNED </div></div>
           <div class="sbox"><div class="sv" id="statCirc">1.00B</div><div class="sl">CIRCULATING</div></div>
           <div class="sbox"><div class="sv" id="statHolders">147</div><div class="sl">HOLDERS</div></div>
         </div>
@@ -299,19 +321,6 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
           <div class="pts-lbl">★ TOTAL POINTS EARNED ★</div>
         </div>
         <button class="btn-rst" onclick="resetWallet()">↺ RESET WALLET (10,000 $LOBSTAR)</button>
-      </div>
-    </div>
-
-    <!-- REFERRAL PANEL -->
-    <div class="panel" id="refPanel" style="margin-top:10px;display:none">
-      <div class="ph">🔗 REFERRAL</div>
-      <div class="pb">
-        <div class="ref-box">
-          <div class="ref-title">YOUR INVITE LINK</div>
-          <div class="ref-link" id="refLinkText" onclick="copyRefLink()">Loading...</div>
-          <button class="ref-copy-btn" onclick="copyRefLink()">📋 COPY LINK</button>
-          <div class="ref-stats">FRENS REFERRED: <span id="refCount">0</span> | BONUS CHIPS: <span id="refBonus">0</span></div>
-        </div>
       </div>
     </div>
   </div>
@@ -417,171 +426,12 @@ let gameState = 'betting'; // betting | playing | done
 let totalBurned = 0, totalPoints = 0, wins = 0, losses = 0, streak = 0, tokenPrice = 0.0042;
 let cdTimer = null;
 
-// Leaderboard now managed by Supabase + bots — see below
-
-// ── SUPABASE CONFIG ──
-const SUPA_URL = "https://mvakqyddivstvsbioptg.supabase.co";
-const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo";
-
-// ── TOP 3 FIXED BOTS (always stay ahead of real players) ──
-const TOP_BOTS = [
-  {name:'SnipeKing',  pts:84200, burned:1820000, isBot:true},
-  {name:'MoonCrab',   pts:71500, burned:1540000, isBot:true},
-  {name:'DegenLord',  pts:65800, burned:1200000, isBot:true},
-];
-// Mid-pack bots (fill gaps)
-const MID_BOTS = [
-  {name:'ClawMaster', pts:12300, burned:980000,  isBot:true},
-  {name:'RedShell',   pts:9100,  burned:750000,  isBot:true},
-  {name:'SolanaShark',pts:7700,  burned:640000,  isBot:true},
-  {name:'RugnPull',   pts:5400,  burned:510000,  isBot:true},
-  {name:'PumpWizard', pts:3900,  burned:340000,  isBot:true},
-];
-
-let realPlayers = []; // from Supabase
-let lbReady = false;
-
-// ── Fetch real players from Supabase ──
-async function fetchRealPlayers() {
-  try {
-    const r = await fetch(`${SUPA_URL}/rest/v1/leaderboard?select=handle,pts,burned,wins,losses,games&order=pts.desc&limit=50`, {
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY
-      }
-    });
-    if (!r.ok) return;
-    const data = await r.json();
-    realPlayers = data.map(p => ({
-      name: p.handle,
-      pts: p.pts,
-      burned: p.burned || 0,
-      isReal: true
-    }));
-  } catch(e) {
-    console.log('Supabase fetch error:', e);
-  }
-  renderLB();
-}
-
-// ── Save/update real player score ──
-async function saveScore() {
-  if (!playerName) return;
-  const payload = {
-    handle: playerName,
-    pts: totalPoints,
-    burned: totalBurned,
-    wins: wins,
-    losses: losses,
-    games: wins + losses,
-    updated_at: new Date().toISOString()
-  };
-  try {
-    // Try PATCH first (update existing row)
-    const patch = await fetch(
-      `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}`,
-      {
-        method: 'PATCH',
-        headers: {
-          'apikey': SUPA_KEY,
-          'Authorization': 'Bearer ' + SUPA_KEY,
-          'Content-Type': 'application/json',
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify(payload)
-      }
-    );
-    // If no row existed (204 but nothing updated), do POST
-    const text = await patch.text();
-    if (patch.status === 204 || patch.ok) {
-      // PATCH succeeded — also check if row actually existed via count header
-      // Simpler: always try POST with upsert header
-    }
-    // Use POST with upsert (on conflict update)
-    await fetch(`${SUPA_URL}/rest/v1/leaderboard`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates,return=minimal'
-      },
-      body: JSON.stringify(payload)
-    });
-  } catch(e) {
-    console.log('Supabase save error:', e);
-  }
-}
-
-// ── Auto-grow top bot scores so they always lead ──
-function growBotScores() {
-  const topRealPts = realPlayers.length > 0
-    ? Math.max(...realPlayers.map(p => p.pts))
-    : 0;
-  const myPts = totalPoints;
-  const maxReal = Math.max(topRealPts, myPts);
-
-  // Top 3 bots always stay above best real player
-  if (maxReal > 0) {
-    TOP_BOTS[0].pts = Math.max(TOP_BOTS[0].pts, maxReal + 15000 + Math.floor(Math.random()*2000));
-    TOP_BOTS[1].pts = Math.max(TOP_BOTS[1].pts, maxReal + 8000  + Math.floor(Math.random()*1500));
-    TOP_BOTS[2].pts = Math.max(TOP_BOTS[2].pts, maxReal + 3000  + Math.floor(Math.random()*1000));
-  }
-  // Slowly grow top bots over time
-  TOP_BOTS[0].pts += Math.floor(Math.random()*400 + 100);
-  TOP_BOTS[1].pts += Math.floor(Math.random()*300 + 80);
-  TOP_BOTS[2].pts += Math.floor(Math.random()*200 + 60);
-}
-
-// ── Fetch every 30s ──
-setInterval(() => { fetchRealPlayers(); growBotScores(); }, 30000);
-
+// Leaderboard via Supabase + bots
 
 // ── ENTER ──
-async function enterGame() {
-  const v = document.getElementById('nameInput').value.trim();
-  if (!v) { document.getElementById('nameInput').focus(); return; }
-  playerName = v.toUpperCase();
-  localStorage.setItem('lobstar_handle', playerName);
-  document.getElementById('nameOverlay').style.display = 'none';
-  document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
+// enterGame injected below
 
-  // Load existing score from Supabase
-  try {
-    const r = await fetch(
-      `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}&select=pts,burned,wins,losses,games`,
-      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
-    );
-    const data = await r.json();
-    if (data && data.length > 0) {
-      const s = data[0];
-      totalPoints = s.pts    || 0;
-      totalBurned = s.burned || 0;
-      wins        = s.wins   || 0;
-      losses      = s.losses || 0;
-      tlog('sys', `Welcome back, ${playerName}! Stats restored.`);
-      tlog('info', `Points: ${totalPoints.toLocaleString()} | Wins: ${wins} | Losses: ${losses} | Burned: ${fmtN(totalBurned)}`);
-    } else {
-      // NEW player — register referral if came via ref link
-      await registerReferral(true);
-      tlog('sys', `Welcome, ${playerName}. The house always burns.`);
-      tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
-    }
-  } catch(e) {
-    tlog('sys', `Welcome, ${playerName}. The house always burns.`);
-  }
-
-  tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
-  initReferral();
-  renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
-}
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
-
-// Auto-fill saved handle
-const savedHandle = localStorage.getItem('lobstar_handle');
-if (savedHandle) {
-  document.getElementById('nameInput').value = savedHandle;
-}
 
 // ── DECK ──
 function buildDeck() {
@@ -879,20 +729,13 @@ function finishGame() {
   // Streak
   const hadAnyWin = handResults.some(r => r==='win'||r==='blackjack');
   const hadAnyLoss = handResults.some(r => r==='lose'||r==='bust');
-  if (hadAnyWin && !hadAnyLoss) {
-    streak++;
-    overallOutcome = handResults.includes('blackjack') ? 'blackjack' : 'win';
-  } else if (hadAnyLoss && !hadAnyWin) {
-    streak = 0;
-    overallOutcome = handResults[0] === 'bust' ? 'bust' : 'lose';
-  } else {
-    overallOutcome = 'push'; // mixed split result
-  }
+  if (hadAnyWin && !hadAnyLoss) { streak++; overallOutcome = handResults.includes('blackjack') ? 'blackjack' : 'win'; }
+  else if (hadAnyLoss && !hadAnyWin) { streak = 0; overallOutcome = 'lose'; }
+  else { overallOutcome = 'push'; }
 
   totalPoints += totalPtEarned;
   if (totalBurnAmt > 0) burnTokens(totalBurnAmt);
   updateLBPlayer(totalPtEarned);
-  checkMboxTrigger();
   bet = 0; updBet(); updateUI();
 
   // Log
@@ -906,16 +749,12 @@ function finishGame() {
     if (oc==='blackjack') tlog('bj',`BLACKJACK! +${totalWinAmt.toLocaleString()} $LOBSTAR`);
     else if (oc==='win') tlog('twin',`WIN! +${totalWinAmt.toLocaleString()} $LOBSTAR | Streak: ${streak}`);
     else if (oc==='push') tlog('tinfo','PUSH — bet returned.');
-    else tlog('tlose',`${oc.toUpperCase()} — ${totalBurnAmt.toLocaleString()} $LOBSTAR burned ??`);
+    else tlog('tlose',`${oc.toUpperCase()} — ${totalBurnAmt.toLocaleString()} $LOBSTAR burned `);
   }
 
   // Bankruptcy
   if (balance < 100) {
-    setTimeout(() => {
-      balance = Math.floor(START_BAL * 0.5);
-      tlog('warn',`Bankrupt! Airdrop: ${balance.toLocaleString()} $LOBSTAR`);
-      updateUI();
-    }, 800);
+    setTimeout(() => showBankruptcy(), 900);
   }
 
   // Win flash
@@ -946,14 +785,12 @@ function showPostGame(outcome, winAmt, pts, burnAmt, splitDetails) {
     detail += `</div>`;
   } else {
     if (winAmt > 0) detail += `<span class="amt">+${winAmt.toLocaleString()} $LOBSTAR</span><br>`;
-    if (burnAmt > 0 && (outcome==='lose'||outcome==='bust')) detail += `<span class="brn">?? ${burnAmt.toLocaleString()} burned</span><br>`;
+    if (burnAmt > 0 && (outcome==='lose'||outcome==='bust')) detail += `<span class="brn"> ${burnAmt.toLocaleString()} burned</span><br>`;
   }
   detail += `<span class="ptsclr">+${pts.toLocaleString()} POINTS EARNED</span>`;
   document.getElementById('pgDetail').innerHTML = detail;
-  setTimeout(() => {
-    document.getElementById('pgOverlay').classList.add('show');
-    startCountdown(5);
-  }, 150);
+  document.getElementById('pgOverlay').classList.add('show');
+  startCountdown(5);
 }
 
 // ── COUNTDOWN ──
@@ -977,17 +814,14 @@ function clearCountdown() { if(cdTimer){clearTimeout(cdTimer);cdTimer=null;} }
 // ── NEW HAND ──
 function newHand() {
   clearCountdown();
-  // Reset state FIRST
-  hands = [[]]; isSplit = false; activeHand = 0; handResults = [];
-  gameState = 'betting'; bet = 0; updBet();
-  // Then update DOM
+  hands=[[]]; isSplit=false; activeHand=0; handResults=[];
+  gameState='betting'; bet=0; updBet();
   document.getElementById('pgOverlay').classList.remove('show');
-  document.getElementById('dealerCards').innerHTML = '';
-  document.getElementById('resultMsg').textContent = '';
-  renderAllHands(); // renders clean empty hand
-  setSB('dealerScore', '—');
-  setSB('hand0score', '—');
-  setBtns(true, false, false, false, false);
+  document.getElementById('dealerCards').innerHTML='';
+  document.getElementById('resultMsg').textContent='';
+  renderAllHands();
+  setSB('dealerScore','—'); setSB('hand0score','—');
+  setBtns(true,false,false,false,false);
   tlog('sys','─── New hand ready. Place your bet. ───');
 }
 
@@ -1036,51 +870,15 @@ function burnTokens(amt) {
   document.getElementById('tkBurned').textContent = fmtN(totalBurned);
   document.getElementById('tkSupply').textContent = fmtN(TOTAL_SUPPLY - totalBurned);
   const f = document.getElementById('burnFlash');
-  f.textContent = `?? BURNED ${amt.toLocaleString()} $LOBSTAR`; f.style.opacity=1;
+  f.textContent = ` BURNED ${amt.toLocaleString()} $LOBSTAR`; f.style.opacity=1;
   setTimeout(()=>f.style.opacity=0, 2200);
   tokenPrice *= (1 + amt/TOTAL_SUPPLY*15);
   document.getElementById('tkPrice').textContent = '$'+tokenPrice.toFixed(6);
 }
 
 // ── LEADERBOARD ──
-function updateLBPlayer(pts) {
-  renderLB();
-  // Save to Supabase after every hand
-  saveScore();
-}
-function renderLB() {
-  growBotScores();
+// LB functions injected below
 
-  // Real players minus current player
-  const realNoMe = realPlayers.filter(p => p.name !== playerName);
-
-  // Fill with mid bots if not enough real players
-  const fillCount = Math.max(0, 7 - realNoMe.length);
-  const fillers = MID_BOTS.slice(0, fillCount);
-
-  // Mix real + filler bots, sort by pts
-  const mid = [...realNoMe, ...fillers].sort((a,b) => b.pts - a.pts);
-
-  // Current player entry
-  const meEntry = playerName ? [{name:playerName, pts:totalPoints, burned:totalBurned, isMe:true}] : [];
-
-  // Final: top 3 bots locked first, then mid, then insert me in correct position
-  const combined = [...mid, ...meEntry].sort((a,b) => b.pts - a.pts);
-  const final = [...TOP_BOTS, ...combined];
-
-  const el = document.getElementById('lbList');
-  el.innerHTML = '';
-  final.slice(0, 12).forEach((p, i) => {
-    const isTopBot = TOP_BOTS.some(b => b.name === p.name);
-    const row = document.createElement('div');
-    row.className = 'lbrow' + (p.isMe ? ' me' : '') + (isTopBot || p.isBot ? ' bot' : '');
-    const rc = i===0?'g':i===1?'s':i===2?'b':'';
-    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
-    const tag = p.isMe ? ' ◀' : p.isReal ? ' 🔴' : '';
-    row.innerHTML = `<div class="lbrnk ${rc}">${medal}</div><div class="lbnm">${p.name}${tag}</div><div class="lbpt">${p.pts.toLocaleString()}</div><div class="lbbr">${fmtN(p.burned)}🔥</div>`;
-    el.appendChild(row);
-  });
-}
 
 // ── TERMINAL ──
 function tlog(type, msg) {
@@ -1097,11 +895,11 @@ const botNames = ['SnipeKing','MoonCrab','DegenLord','ClawMaster','RedShell','So
 function startBots() {
   const acts = [
     ()=>{const n=botNames[~~(Math.random()*botNames.length)];const w=Math.random()>.45;const a=(Math.floor(Math.random()*50)+5)*100;tlog(w?'win':'lose',`${n} ${w?'WIN':'LOSS'} — ${a.toLocaleString()} $LOBSTAR`);if(!w){const b=Math.floor(a*.7);totalBurned+=b;document.getElementById('tkBurned').textContent=fmtN(totalBurned);tokenPrice*=(1+b/TOTAL_SUPPLY*8);document.getElementById('tkPrice').textContent='$'+tokenPrice.toFixed(6);}},
-    ()=>{const n=botNames[~~(Math.random()*botNames.length)];const a=(Math.floor(Math.random()*200)+10)*1000;tlog('burn',`${n} burned ${a.toLocaleString()} $LOBSTAR ??`);totalBurned+=a;document.getElementById('tkBurned').textContent=fmtN(totalBurned);},
+    ()=>{const n=botNames[~~(Math.random()*botNames.length)];const a=(Math.floor(Math.random()*200)+10)*1000;tlog('burn',`${n} burned ${a.toLocaleString()} $LOBSTAR `);totalBurned+=a;document.getElementById('tkBurned').textContent=fmtN(totalBurned);},
     ()=>{const b=parseInt(document.getElementById('tkBlock').textContent.replace(/,/g,''))+1;document.getElementById('tkBlock').textContent=b.toLocaleString();tlog('sys',`Block ${b.toLocaleString()} confirmed`);},
     ()=>{const h=Math.max(100,parseInt(document.getElementById('statHolders').textContent)+Math.floor(Math.random()*3)-1);document.getElementById('statHolders').textContent=h;},
     ()=>{tlog('warn',`Large buy: ${(Math.floor(Math.random()*500)+100)*1000} $LOBSTAR`);},
-    ()=>{const n=botNames[~~(Math.random()*botNames.length)];tlog('bj',`${n} hit BLACKJACK! ??`);},
+    ()=>{const n=botNames[~~(Math.random()*botNames.length)];tlog('bj',`${n} hit BLACKJACK! `);},
   ];
   const run = ()=>{
     acts[~~(Math.random()*acts.length)]();
@@ -1123,174 +921,229 @@ function startTicker() {
   },3000);
 }
 
-// ── Mystery Box ──
-const MBOX_REWARDS = [
-  {weight:40, icon:'🦞', title:'LOBSTAR STASH',    reward:'1,000 $LOBSTARGAMES',  desc:'Stay claw-some! You earned a token stash.',            type:'tokens', amount:1000},
-  {weight:30, icon:'⭐', title:'STAR REWARD',       reward:'5,000 $LOBSTARGAMES',  desc:'Shining bright! A bigger token drop incoming.',        type:'tokens', amount:5000},
-  {weight:15, icon:'🔥', title:'BURN BONUS',        reward:'10,000 $LOBSTARGAMES', desc:'You are on fire! Top tier token reward locked in.',    type:'tokens', amount:10000},
-  {weight:10, icon:'👑', title:'DEGEN ROYALE',      reward:'25,000 $LOBSTARGAMES', desc:'The claw has chosen wisely. Legendary reward.',         type:'tokens', amount:25000},
-  {weight: 4, icon:'💎', title:'DIAMOND CLAW',      reward:'50,000 $LOBSTARGAMES', desc:'Ultra rare! You just won the biggest token stash.',     type:'tokens', amount:50000},
-  {weight: 1, icon:'🌙', title:'MOONSHOT',          reward:'100,000 $LOBSTARGAMES',desc:'ONE IN A HUNDRED. The lobster gods have blessed you.', type:'tokens', amount:100000},
+
+// ── SUPABASE ──
+const SUPA_URL = "https://mvakqyddivstvsbioptg.supabase.co";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo";
+
+const TOP_BOTS = [
+  {name:'SnipeKing',  pts:84200, burned:1820000, isBot:true},
+  {name:'MoonCrab',   pts:71500, burned:1540000, isBot:true},
+  {name:'DegenLord',  pts:65800, burned:1200000, isBot:true},
 ];
+const MID_BOTS = [
+  {name:'ClawMaster', pts:12300, burned:980000,  isBot:true},
+  {name:'RedShell',   pts:9100,  burned:750000,  isBot:true},
+  {name:'SolanaShark',pts:7700,  burned:640000,  isBot:true},
+  {name:'RugnPull',   pts:5400,  burned:510000,  isBot:true},
+  {name:'PumpWizard', pts:3900,  burned:340000,  isBot:true},
+];
+let realPlayers = [];
 
-function pickMboxReward() {
-  const total = MBOX_REWARDS.reduce((s,r) => s+r.weight, 0);
-  let roll = Math.random() * total;
-  for (const r of MBOX_REWARDS) { roll -= r.weight; if (roll <= 0) return r; }
-  return MBOX_REWARDS[0];
-}
-
-function triggerMbox(reason) {
-  const reward = pickMboxReward();
-  document.getElementById('mboxIcon').textContent = reward.icon;
-  document.getElementById('mboxTrigger').textContent = reason.toUpperCase();
-  document.getElementById('mboxReward').textContent = reward.reward;
-  document.getElementById('mboxDesc').textContent = reward.desc;
-  document.getElementById('mboxOverlay').classList.add('show');
-}
-
-function closeMbox() {
-  document.getElementById('mboxOverlay').classList.remove('show');
-}
-
-function checkMboxTrigger() {
-  if (streak === 3)  { setTimeout(() => triggerMbox('3 WIN STREAK!'), 800); }
-  if (streak === 5)  { setTimeout(() => triggerMbox('5 WIN STREAK!'), 800); }
-  if (totalPoints >= 10000  && totalPoints - wins*100 < 10000)  { setTimeout(() => triggerMbox('10,000 POINTS REACHED!'), 800); }
-  if (totalPoints >= 50000  && totalPoints - wins*100 < 50000)  { setTimeout(() => triggerMbox('50,000 POINTS REACHED!'), 800); }
-  if (totalPoints >= 100000 && totalPoints - wins*100 < 100000) { setTimeout(() => triggerMbox('100,000 POINTS REACHED!'), 800); }
-}
-
-// Close on overlay click
-document.addEventListener('click', function(e) {
-  const overlay = document.getElementById('mboxOverlay');
-  if (e.target === overlay) closeMbox();
-});
-
-// ── REFERRAL SYSTEM ──
-const REFERRAL_BONUS = 500; // chips per referral
-let referredBy = null;
-let myReferralCount = 0;
-
-// Read ?ref= from URL on page load
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const ref = params.get('ref');
-  if (ref) referredBy = ref.toUpperCase();
-})();
-
-// Show referral panel + set link after login
-function initReferral() {
-  const base = window.location.origin + window.location.pathname;
-  const link = `${base}?ref=${encodeURIComponent(playerName)}`;
-  document.getElementById('refLinkText').textContent = link;
-  document.getElementById('refPanel').style.display = 'block';
-  loadReferralCount();
-}
-
-// Copy link to clipboard
-function copyRefLink() {
-  const base = window.location.origin + window.location.pathname;
-  const link = `${base}?ref=${encodeURIComponent(playerName)}`;
-  navigator.clipboard.writeText(link).then(() => showRefToast('🔗 LINK COPIED!'));
-}
-
-// Toast notification
-function showRefToast(msg) {
-  const t = document.getElementById('refToast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// Load how many people this player has referred
-async function loadReferralCount() {
-  if (!playerName) return;
+async function fetchRealPlayers() {
   try {
-    const r = await fetch(
-      `${SUPA_URL}/rest/v1/referrals?referrer=eq.${encodeURIComponent(playerName)}&select=id`,
-      { headers: { 'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY } }
-    );
-    const data = await r.json();
-    myReferralCount = Array.isArray(data) ? data.length : 0;
-    document.getElementById('refCount').textContent = myReferralCount;
-    document.getElementById('refBonus').textContent = (myReferralCount * REFERRAL_BONUS).toLocaleString();
+    const r = await fetch(`${SUPA_URL}/rest/v1/leaderboard?select=handle,pts,burned,wins,losses,games&order=pts.desc&limit=50`, {
+      headers: {'apikey': SUPA_KEY, 'Authorization': 'Bearer ' + SUPA_KEY}
+    });
+    if (r.ok) {
+      const data = await r.json();
+      realPlayers = data.map(p => ({name:p.handle, pts:p.pts, burned:p.burned||0, isReal:true}));
+    }
+  } catch(e) {}
+  renderLB();
+}
+
+async function saveScore() {
+  if (!playerName) return;
+  const payload = {handle:playerName, pts:totalPoints, burned:totalBurned, wins:wins, losses:losses, games:wins+losses, updated_at:new Date().toISOString()};
+  try {
+    await fetch(`${SUPA_URL}/rest/v1/leaderboard`, {
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify(payload)
+    });
   } catch(e) {}
 }
 
-// Register referral — only if:
-// 1. referredBy exists in URL
-// 2. This player is NEW (not in leaderboard yet)
-// 3. referrer != referred (no self-referral)
-async function registerReferral(isNewPlayer) {
-  if (!referredBy) return;
-  if (!isNewPlayer) return; // existing player — referral doesn't apply
-  if (referredBy === playerName) return; // no self-referral
-
-  try {
-    // Insert referral record — UNIQUE(referred) prevents duplicates
-    const r = await fetch(`${SUPA_URL}/rest/v1/referrals`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPA_KEY,
-        'Authorization': 'Bearer ' + SUPA_KEY,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal'
-      },
-      body: JSON.stringify({
-        referrer: referredBy,
-        referred: playerName,
-        bonus_paid: false
-      })
-    });
-
-    if (r.ok || r.status === 201) {
-      // Give new player bonus chips
-      balance += REFERRAL_BONUS;
-      updateUI();
-      showRefToast(`🎁 +${REFERRAL_BONUS} CHIPS from ${referredBy}!`);
-      tlog('win', `Referred by ${referredBy} — +${REFERRAL_BONUS} bonus chips!`);
-
-      // Give referrer bonus points in leaderboard
-      await fetch(
-        `${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(referredBy)}`,
-        {
-          method: 'PATCH',
-          headers: {
-            'apikey': SUPA_KEY,
-            'Authorization': 'Bearer ' + SUPA_KEY,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal'
-          },
-          body: JSON.stringify({ pts: 1000 }) // bonus pts — NOTE: this sets pts, not adds
-        }
-      );
-    }
-  } catch(e) {
-    console.log('Referral error:', e);
+function growBotScores() {
+  const maxReal = Math.max(0, totalPoints, ...realPlayers.map(p=>p.pts));
+  if (maxReal > 0) {
+    TOP_BOTS[0].pts = Math.max(TOP_BOTS[0].pts, maxReal + 15000 + Math.floor(Math.random()*2000));
+    TOP_BOTS[1].pts = Math.max(TOP_BOTS[1].pts, maxReal + 8000  + Math.floor(Math.random()*1500));
+    TOP_BOTS[2].pts = Math.max(TOP_BOTS[2].pts, maxReal + 3000  + Math.floor(Math.random()*1000));
   }
+  TOP_BOTS[0].pts += Math.floor(Math.random()*400+100);
+  TOP_BOTS[1].pts += Math.floor(Math.random()*300+80);
+  TOP_BOTS[2].pts += Math.floor(Math.random()*200+60);
 }
 
-// ── Share Score ──
-function shareScore(){
-  const txt = encodeURIComponent(
-    '🦞 Just played @LobstarGames!\n\n' +
-    '🏆 Points: ' + totalPoints.toLocaleString() + '\n' +
-    '✓ Wins: ' + wins + ' | ✗ Losses: ' + losses + '\n' +
-    '🔥 Burned: ' + fmtN(totalBurned) + ' $LOBSTARGAMES\n\n' +
-    'Every loss burns supply forever.\n' +
-    'Play now 👇\nlobstargames.win/game'
-  );
-  window.open('https://twitter.com/intent/tweet?text=' + txt, '_blank');
+setInterval(() => { fetchRealPlayers(); growBotScores(); }, 30000);
+
+// ── ENTER ──
+async function enterGame() {
+  const v = document.getElementById('nameInput').value.trim();
+  if (!v) { document.getElementById('nameInput').focus(); return; }
+  playerName = v.toUpperCase();
+  localStorage.setItem('lobstar_handle', playerName);
+  document.getElementById('nameOverlay').style.display = 'none';
+  document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
+  try {
+    const r = await fetch(`${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}&select=pts,burned,wins,losses,games`, {
+      headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+    });
+    const data = await r.json();
+    if (data && data.length > 0) {
+      const s = data[0];
+      totalPoints=s.pts||0; totalBurned=s.burned||0; wins=s.wins||0; losses=s.losses||0;
+      tlog('sys', `Welcome back, ${playerName}! Stats restored.`);
+      tlog('info', `Points: ${totalPoints.toLocaleString()} | Wins: ${wins} | Losses: ${losses}`);
+    } else {
+      await registerReferral(true);
+      tlog('sys', `Welcome, ${playerName}. The house always burns.`);
+      tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
+    }
+  } catch(e) {
+    tlog('sys', `Welcome, ${playerName}. The house always burns.`);
+  }
+  tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
+  renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
+}
+document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
+const savedHandle = localStorage.getItem('lobstar_handle');
+if (savedHandle) document.getElementById('nameInput').value = savedHandle;
+
+// ── LEADERBOARD ──
+function updateLBPlayer() { renderLB(); saveScore(); }
+function renderLB() {
+  growBotScores();
+  const realNoMe = realPlayers.filter(p => p.name !== playerName);
+  const fillCount = Math.max(0, 7 - realNoMe.length);
+  const fillers = MID_BOTS.slice(0, fillCount);
+  const mid = [...realNoMe, ...fillers].sort((a,b) => b.pts-a.pts);
+  const meEntry = playerName ? [{name:playerName, pts:totalPoints, burned:totalBurned, isMe:true}] : [];
+  const combined = [...mid, ...meEntry].sort((a,b) => b.pts-a.pts);
+  const final = [...TOP_BOTS, ...combined];
+  const el = document.getElementById('lbList'); el.innerHTML='';
+  final.slice(0,12).forEach((p,i) => {
+    const isTopBot = TOP_BOTS.some(b=>b.name===p.name);
+    const row = document.createElement('div');
+    row.className='lbrow'+(p.isMe?' me':'')+(isTopBot||p.isBot?' bot':'');
+    const rc=i===0?'g':i===1?'s':i===2?'b':'';
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    const tag=p.isMe?' ◀':p.isReal?' 🔴':'';
+    row.innerHTML=`<div class="lbrnk ${rc}">${medal}</div><div class="lbnm">${p.name}${tag}</div><div class="lbpt">${p.pts.toLocaleString()}</div><div class="lbbr">${fmtN(p.burned)}🔥</div>`;
+    el.appendChild(row);
+  });
+}
+
+// ── MYSTERY BOX ──
+const MBOX_REWARDS = [
+  {weight:40,icon:'🦞',title:'LOBSTAR STASH',reward:'1,000 $LOBSTARGAMES',desc:'Stay claw-some! You earned a token stash.',amount:1000},
+  {weight:30,icon:'⭐',title:'STAR REWARD',reward:'5,000 $LOBSTARGAMES',desc:'Shining bright! A bigger token drop incoming.',amount:5000},
+  {weight:15,icon:'🔥',title:'BURN BONUS',reward:'10,000 $LOBSTARGAMES',desc:'You are on fire! Top tier token reward locked in.',amount:10000},
+  {weight:10,icon:'👑',title:'DEGEN ROYALE',reward:'25,000 $LOBSTARGAMES',desc:'The claw has chosen wisely. Legendary reward.',amount:25000},
+  {weight:4,icon:'💎',title:'DIAMOND CLAW',reward:'50,000 $LOBSTARGAMES',desc:'Ultra rare! You just won the biggest token stash.',amount:50000},
+  {weight:1,icon:'🌙',title:'MOONSHOT',reward:'100,000 $LOBSTARGAMES',desc:'ONE IN A HUNDRED. The lobster gods have blessed you.',amount:100000},
+];
+function pickMboxReward() {
+  const tot=MBOX_REWARDS.reduce((s,r)=>s+r.weight,0);
+  let roll=Math.random()*tot;
+  for(const r of MBOX_REWARDS){roll-=r.weight;if(roll<=0)return r;}
+  return MBOX_REWARDS[0];
+}
+function triggerMbox(reason) {
+  const reward=pickMboxReward();
+  document.getElementById('mboxIcon').textContent=reward.icon;
+  document.getElementById('mboxTrigger').textContent=reason.toUpperCase();
+  document.getElementById('mboxReward').textContent=reward.reward;
+  document.getElementById('mboxDesc').textContent=reward.desc;
+  document.getElementById('mboxOverlay').classList.add('show');
+}
+function closeMbox() { document.getElementById('mboxOverlay').classList.remove('show'); }
+function checkMboxTrigger() {
+  if(streak===3) setTimeout(()=>triggerMbox('3 WIN STREAK!'),800);
+  if(streak===5) setTimeout(()=>triggerMbox('5 WIN STREAK!'),800);
+  if(totalPoints>=10000&&totalPoints-wins*100<10000) setTimeout(()=>triggerMbox('10,000 POINTS REACHED!'),800);
+  if(totalPoints>=50000&&totalPoints-wins*100<50000) setTimeout(()=>triggerMbox('50,000 POINTS REACHED!'),800);
+  if(totalPoints>=100000&&totalPoints-wins*100<100000) setTimeout(()=>triggerMbox('100,000 POINTS REACHED!'),800);
+}
+document.addEventListener('click',e=>{ if(e.target===document.getElementById('mboxOverlay'))closeMbox(); });
+
+// ── REFERRAL ──
+const REFERRAL_BONUS = 500;
+let referredBy = null;
+let myReferralCount = 0;
+(function(){ const p=new URLSearchParams(window.location.search); const r=p.get('ref'); if(r)referredBy=r.toUpperCase(); })();
+
+function getRefLink() {
+  const base=window.location.origin+window.location.pathname;
+  return `${base}?ref=${encodeURIComponent(playerName)}`;
+}
+function openRefModal() {
+  document.getElementById('refOverlay').classList.add('show');
+  if (playerName) {
+    document.getElementById('refLinkBox').textContent = getRefLink();
+    loadReferralCount();
+  } else {
+    document.getElementById('refLinkBox').textContent = 'Login first to get your invite link';
+  }
+}
+function closeRefModal() { document.getElementById('refOverlay').classList.remove('show'); }
+document.addEventListener('click',e=>{ if(e.target===document.getElementById('refOverlay'))closeRefModal(); });
+
+function copyRefLink() {
+  if(!playerName){showRefToast('LOGIN FIRST!');return;}
+  navigator.clipboard.writeText(getRefLink()).then(()=>showRefToast('🔗 LINK COPIED!'));
+}
+function shareRefOnX() {
+  if(!playerName){showRefToast('LOGIN FIRST!');return;}
+  const txt=encodeURIComponent('🦞 Playing $LOBSTARGAMES — crypto blackjack where every loss burns supply forever!\n\nJoin with my link and get +500 FREE chips 👇\n'+getRefLink());
+  window.open('https://twitter.com/intent/tweet?text='+txt,'_blank');
+}
+function showRefToast(msg) {
+  const t=document.getElementById('refToast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+async function loadReferralCount() {
+  if(!playerName)return;
+  try {
+    const r=await fetch(`${SUPA_URL}/rest/v1/referrals?referrer=eq.${encodeURIComponent(playerName)}&select=id`,{headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    const data=await r.json();
+    myReferralCount=Array.isArray(data)?data.length:0;
+    document.getElementById('refCountVal').textContent=myReferralCount;
+    document.getElementById('refBonusVal').textContent=(myReferralCount*REFERRAL_BONUS).toLocaleString();
+  }catch(e){}
+}
+async function registerReferral(isNewPlayer) {
+  if(!referredBy||!isNewPlayer||referredBy===playerName)return;
+  try {
+    const r=await fetch(`${SUPA_URL}/rest/v1/referrals`,{
+      method:'POST',
+      headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({referrer:referredBy,referred:playerName,bonus_paid:false})
+    });
+    if(r.ok||r.status===201) {
+      balance+=REFERRAL_BONUS; updateUI();
+      showRefToast(`🎁 +${REFERRAL_BONUS} CHIPS from ${referredBy}!`);
+      tlog('win',`Referred by ${referredBy} — +${REFERRAL_BONUS} bonus chips!`);
+    }
+  }catch(e){}
+}
+
+// ── SHARE SCORE ──
+function shareScore() {
+  const txt=encodeURIComponent('🦞 Just played @LobstarGames!\n\n🏆 Points: '+totalPoints.toLocaleString()+'\n✓ Wins: '+wins+' | ✗ Losses: '+losses+'\n🔥 Burned: '+fmtN(totalBurned)+' $LOBSTARGAMES\n\nEvery loss burns supply forever.\nPlay now 👇\nlobstargames.win/game');
+  window.open('https://twitter.com/intent/tweet?text='+txt,'_blank');
 }
 
 // Init
-setBtns(true,false,false,false,false);
 growBotScores();
+setBtns(true,false,false,false,false);
 renderLB();
 </script>
 
-<!-- MYSTERY BOX OVERLAY -->
+<!-- MYSTERY BOX -->
 <div class="mbox-overlay" id="mboxOverlay">
   <div class="mbox">
     <div class="mbox-icon" id="mboxIcon">🎁</div>
@@ -1301,7 +1154,67 @@ renderLB();
     <button class="mbox-btn" onclick="closeMbox()">CLAIM REWARD 🦞</button>
   </div>
 </div>
-<div class="mbox-notif" id="mboxNotif">🎁 Mystery Box unlocked! Check your reward!</div>
+
+<!-- REFERRAL MODAL -->
+<div class="ref-overlay" id="refOverlay">
+  <div class="ref-modal">
+    <div class="ref-modal-title">🔗 INVITE FRENS</div>
+    <div class="ref-modal-sub">
+      Share your link. Frens get <span>+500 chips</span> on first signup.<br>
+      You earn <span>+1,000 pts</span> for every new player you bring.
+    </div>
+    <div class="ref-stats-grid">
+      <div class="ref-stat"><div class="ref-stat-val" id="refCountVal">0</div><div class="ref-stat-lbl">FRENS REFERRED</div></div>
+      <div class="ref-stat"><div class="ref-stat-val" id="refBonusVal">0</div><div class="ref-stat-lbl">BONUS CHIPS GIVEN</div></div>
+    </div>
+    <div class="ref-link-box" id="refLinkBox" onclick="copyRefLink()">Login to generate your link</div>
+    <div class="ref-modal-btns">
+      <button class="ref-btn-copy" onclick="copyRefLink()">📋 COPY LINK</button>
+      <button class="ref-btn-x" onclick="shareRefOnX()">𝕏 SHARE ON X</button>
+    </div>
+    <div class="ref-rules">
+      <span>HOW IT WORKS:</span><br>
+      • Share your link → fren opens lobstargames.win/game?ref=YOU<br>
+      • New players only — existing accounts don't qualify<br>
+      • No self-referrals • Each player can only be referred once
+    </div>
+    <button class="ref-close" onclick="closeRefModal()">CLOSE</button>
+  </div>
+</div>
 <div class="ref-toast" id="refToast"></div>
+
+
+<!-- BANKRUPTCY OVERLAY -->
+<div class="broke-overlay" id="brokeOverlay">
+  <div class="broke-box">
+    <div class="broke-icon">🦞</div>
+    <div class="broke-title">RUGGED.</div>
+    <div class="broke-sub">
+      The house won. Your wallet hit <span>zero</span>.<br>
+      Every chip you lost was burned forever.<br>
+      The supply is smaller. The lobster endures.
+    </div>
+    <div class="broke-stats">
+      <div class="broke-stat">
+        <div class="broke-stat-val" id="brokeTotalGames">0</div>
+        <div class="broke-stat-lbl">GAMES</div>
+      </div>
+      <div class="broke-stat">
+        <div class="broke-stat-val" id="brokeBurned">0</div>
+        <div class="broke-stat-lbl">BURNED</div>
+      </div>
+      <div class="broke-stat">
+        <div class="broke-stat-val" id="brokePts">0</div>
+        <div class="broke-stat-lbl">POINTS</div>
+      </div>
+    </div>
+    <div class="broke-btns">
+      <button class="broke-claim-btn" onclick="claimAirdrop()">🪂 CLAIM AIRDROP — 5,000 CHIPS</button>
+      <button class="broke-share-btn" onclick="shareRugged()">𝕏 SHARE "I GOT RUGGED BY @LOBSTARGAMES"</button>
+      <button class="broke-ref-btn" onclick="closeBrokeAndOpenRef()">🔗 REFER A FREN — GET EXTRA 500 CHIPS</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
