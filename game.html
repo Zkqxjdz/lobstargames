@@ -801,9 +801,15 @@ function finishGame() {
   // Streak
   const hadAnyWin = handResults.some(r => r==='win'||r==='blackjack');
   const hadAnyLoss = handResults.some(r => r==='lose'||r==='bust');
-  if (hadAnyWin && !hadAnyLoss) { streak++; overallOutcome = handResults.includes('blackjack') ? 'blackjack' : 'win'; }
-  else if (hadAnyLoss && !hadAnyWin) { streak = 0; overallOutcome = 'lose'; }
-  else { overallOutcome = 'push'; }
+  if (hadAnyWin && !hadAnyLoss) {
+    streak++;
+    overallOutcome = handResults.includes('blackjack') ? 'blackjack' : 'win';
+  } else if (hadAnyLoss && !hadAnyWin) {
+    streak = 0;
+    overallOutcome = handResults[0] === 'bust' ? 'bust' : 'lose';
+  } else {
+    overallOutcome = 'push'; // mixed split result
+  }
 
   totalPoints += totalPtEarned;
   if (totalBurnAmt > 0) burnTokens(totalBurnAmt);
@@ -866,8 +872,10 @@ function showPostGame(outcome, winAmt, pts, burnAmt, splitDetails) {
   }
   detail += `<span class="ptsclr">+${pts.toLocaleString()} POINTS EARNED</span>`;
   document.getElementById('pgDetail').innerHTML = detail;
-  document.getElementById('pgOverlay').classList.add('show');
-  startCountdown(5);
+  setTimeout(() => {
+    document.getElementById('pgOverlay').classList.add('show');
+    startCountdown(5);
+  }, 150);
 }
 
 // ── COUNTDOWN ──
@@ -891,13 +899,16 @@ function clearCountdown() { if(cdTimer){clearTimeout(cdTimer);cdTimer=null;} }
 // ── NEW HAND ──
 function newHand() {
   clearCountdown();
-  document.getElementById('pgOverlay').classList.remove('show');
-  renderAllHands();
-  document.getElementById('dealerCards').innerHTML = '';
-  setSB('dealerScore','—'); setSB('hand0score','—');
-  document.getElementById('resultMsg').textContent = '';
+  // Reset state FIRST
   hands = [[]]; isSplit = false; activeHand = 0; handResults = [];
   gameState = 'betting'; bet = 0; updBet();
+  // Then update DOM
+  document.getElementById('pgOverlay').classList.remove('show');
+  document.getElementById('dealerCards').innerHTML = '';
+  document.getElementById('resultMsg').textContent = '';
+  renderAllHands(); // renders clean empty hand
+  setSB('dealerScore', '—');
+  setSB('hand0score', '—');
   setBtns(true, false, false, false, false);
   tlog('sys','─── New hand ready. Place your bet. ───');
 }
@@ -960,13 +971,35 @@ function updateLBPlayer(pts) {
   saveScore();
 }
 function renderLB() {
-  const sorted = [...leaderboard].sort((a,b)=>b.pts-a.pts);
-  const el = document.getElementById('lbList'); el.innerHTML='';
-  sorted.forEach((p,i) => {
-    const row = document.createElement('div'); row.className='lbrow'+(p.isMe?' me':'');
+  growBotScores();
+
+  // Real players minus current player
+  const realNoMe = realPlayers.filter(p => p.name !== playerName);
+
+  // Fill with mid bots if not enough real players
+  const fillCount = Math.max(0, 7 - realNoMe.length);
+  const fillers = MID_BOTS.slice(0, fillCount);
+
+  // Mix real + filler bots, sort by pts
+  const mid = [...realNoMe, ...fillers].sort((a,b) => b.pts - a.pts);
+
+  // Current player entry
+  const meEntry = playerName ? [{name:playerName, pts:totalPoints, burned:totalBurned, isMe:true}] : [];
+
+  // Final: top 3 bots locked first, then mid, then insert me in correct position
+  const combined = [...mid, ...meEntry].sort((a,b) => b.pts - a.pts);
+  const final = [...TOP_BOTS, ...combined];
+
+  const el = document.getElementById('lbList');
+  el.innerHTML = '';
+  final.slice(0, 12).forEach((p, i) => {
+    const isTopBot = TOP_BOTS.some(b => b.name === p.name);
+    const row = document.createElement('div');
+    row.className = 'lbrow' + (p.isMe ? ' me' : '') + (isTopBot || p.isBot ? ' bot' : '');
     const rc = i===0?'g':i===1?'s':i===2?'b':'';
-    const m = i===0?'??':i===1?'??':i===2?'??':(i+1);
-    row.innerHTML=`<div class="lbrnk ${rc}">${m}</div><div class="lbnm">${p.name}${p.isMe?' ◀':''}</div><div class="lbpt">${p.pts.toLocaleString()}</div><div class="lbbr">${fmtN(p.burned)}??</div>`;
+    const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':(i+1);
+    const tag = p.isMe ? ' ◀' : p.isReal ? ' 🔴' : '';
+    row.innerHTML = `<div class="lbrnk ${rc}">${medal}</div><div class="lbnm">${p.name}${tag}</div><div class="lbpt">${p.pts.toLocaleString()}</div><div class="lbbr">${fmtN(p.burned)}🔥</div>`;
     el.appendChild(row);
   });
 }
