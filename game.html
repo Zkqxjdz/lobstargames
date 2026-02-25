@@ -185,6 +185,92 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .ninput:focus{border-color:var(--gold);box-shadow:0 0 14px rgba(255,184,0,0.2);}
 .nenter{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid #ff7700;width:100%;font-size:17px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;padding:12px;border-radius:3px;cursor:pointer;}
 .nenter:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+
+/* ── Mystery Box ─────────────────────────────────────────────────────────── */
+.mbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;
+  display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
+.mbox-overlay.show{opacity:1;pointer-events:all;}
+.mbox-card{background:linear-gradient(145deg,#1a0a2e,#0d0520);border:2px solid rgba(150,0,255,0.5);
+  border-radius:12px;padding:36px 40px;text-align:center;max-width:380px;width:90%;
+  box-shadow:0 0 60px rgba(150,0,255,0.3);animation:mboxIn .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes mboxIn{from{transform:scale(.6) rotate(-5deg);opacity:0;}to{transform:scale(1) rotate(0);opacity:1;}}
+.mbox-emoji{font-size:72px;display:block;margin-bottom:12px;animation:mboxBounce 0.6s ease 0.3s both;}
+@keyframes mboxBounce{0%{transform:scale(0);}60%{transform:scale(1.2);}100%{transform:scale(1);}}
+.mbox-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:3px;color:#c084fc;margin-bottom:6px;}
+.mbox-reward{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);margin:10px 0;}
+.mbox-desc{font-size:13px;color:var(--text-dim);line-height:1.6;margin-bottom:20px;}
+.mbox-btn{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:2px;
+  background:linear-gradient(180deg,#7c00cc,#4a0080);color:#fff;
+  border:none;padding:12px 32px;border-radius:4px;cursor:pointer;
+  box-shadow:0 0 20px rgba(150,0,255,0.4);}
+.mbox-btn:hover{background:linear-gradient(180deg,#9900ff,#6600aa);}
+.mbox-notification{position:fixed;bottom:80px;right:20px;background:rgba(150,0,255,0.15);
+  border:1px solid rgba(150,0,255,0.4);border-radius:8px;padding:12px 18px;
+  font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;color:#c084fc;
+  z-index:1000;cursor:pointer;animation:slideIn .3s ease;display:none;}
+@keyframes slideIn{from{transform:translateX(120px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+
+/* ── MILESTONE TRACKER ────────────────────────────────────────────────── */
+.milestone-bar{background:rgba(255,140,0,0.04);border-top:1px solid rgba(255,140,0,0.15);
+  border-bottom:1px solid rgba(255,140,0,0.15);padding:12px 20px;
+  display:flex;align-items:center;justify-content:center;gap:0;flex-wrap:wrap;
+  position:relative;overflow:hidden;}
+.milestone-bar::before{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,140,0,0.03),transparent);
+  animation:mileSweep 3s ease-in-out infinite;}
+@keyframes mileSweep{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.mile-label{font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:3px;
+  color:var(--text-dim);margin-right:16px;white-space:nowrap;}
+.mile-track{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;}
+.mile-node{display:flex;flex-direction:column;align-items:center;gap:3px;position:relative;}
+.mile-node:not(:last-child)::after{content:'──────';font-size:8px;color:rgba(255,184,0,0.2);
+  position:absolute;left:100%;top:10px;margin-left:2px;margin-right:2px;}
+.mile-circle{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font-size:16px;border:2px solid rgba(255,184,0,0.2);
+  background:rgba(0,0,0,0.4);transition:all .3s;position:relative;}
+.mile-circle.done{border-color:var(--gold);background:rgba(255,184,0,0.15);
+  box-shadow:0 0 12px rgba(255,184,0,0.4);}
+.mile-circle.active{border-color:var(--orange);background:rgba(255,100,0,0.1);
+  animation:milePulse 1.5s ease-in-out infinite;}
+@keyframes milePulse{0%,100%{box-shadow:0 0 8px rgba(255,100,0,0.3)}50%{box-shadow:0 0 20px rgba(255,100,0,0.7)}}
+.mile-caption{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;
+  color:var(--text-dim);white-space:nowrap;text-align:center;}
+.mile-caption.done{color:var(--gold);}
+.mile-caption.active{color:var(--orange);}
+.mile-progress{font-family:'Bebas Neue',sans-serif;font-size:11px;margin-left:16px;
+  color:var(--text-dim);white-space:nowrap;}
+.mile-progress span{color:var(--orange);}
+
+/* ── MYSTERY BOX ──────────────────────────────────────────────────────── */
+.mystery-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;
+  display:none;align-items:center;justify-content:center;}
+.mystery-overlay.active{display:flex;}
+.mystery-box{background:linear-gradient(135deg,#1a0800,#2a1000);
+  border:2px solid var(--gold);border-radius:8px;padding:40px;text-align:center;
+  max-width:420px;width:90%;position:relative;
+  box-shadow:0 0 60px rgba(255,184,0,0.3),0 0 120px rgba(255,100,0,0.15);}
+.mystery-box-icon{font-size:72px;margin-bottom:16px;animation:mysteryFloat 2s ease-in-out infinite;}
+@keyframes mysteryFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-10px) rotate(3deg)}}
+.mystery-box-title{font-family:'Bebas Neue',sans-serif;font-size:32px;letter-spacing:4px;
+  color:var(--gold);margin-bottom:8px;}
+.mystery-box-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);
+  margin-bottom:20px;letter-spacing:2px;}
+.mystery-box-reward{font-family:'Bebas Neue',sans-serif;font-size:48px;color:var(--orange);
+  margin:16px 0;text-shadow:0 0 20px rgba(255,100,0,0.6);min-height:60px;}
+.mystery-box-desc{font-size:13px;color:var(--text);margin-bottom:24px;line-height:1.6;}
+.mystery-box-btn{font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;
+  padding:12px 32px;background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;
+  border:none;border-radius:4px;cursor:pointer;transition:all .2s;}
+.mystery-box-btn:hover{background:linear-gradient(180deg,#ee6600,#aa3300);transform:scale(1.05);}
+.mystery-box-close{position:absolute;top:12px;right:16px;font-size:20px;cursor:pointer;
+  color:var(--text-dim);background:none;border:none;padding:4px 8px;}
+.mystery-box-close:hover{color:var(--gold);}
+.mystery-shake{animation:mysteryShake .5s ease-in-out;}
+@keyframes mysteryShake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.mystery-spin{animation:mysterySpin 1s ease-in-out;}
+@keyframes mysterySpin{0%{transform:scale(0) rotate(-180deg)}100%{transform:scale(1) rotate(0deg)}}
+
 </style>
 </head>
 <body>
@@ -218,6 +304,32 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
     <div class="ticker-item">BLOCK <span class="tv" id="tkBlock">294180422</span></div>
   </div>
 </header>
+<div class="milestone-bar" id="milestonebar">
+  <div class="mile-label">🎯 MILESTONES</div>
+  <div class="mile-track">
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode1">🚀</div>
+      <div class="mile-caption" id="mcap1">LAUNCH</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode2">💰</div>
+      <div class="mile-caption" id="mcap2">$10K MC</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode3">🦞</div>
+      <div class="mile-caption" id="mcap3">$50K MC<br><span style="color:#ffb800;font-size:8px;">🎁 AIRDROP</span></div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode4">🔥</div>
+      <div class="mile-caption" id="mcap4">$100K MC</div>
+    </div>
+    <div class="mile-node">
+      <div class="mile-circle" id="mnode5">🌙</div>
+      <div class="mile-caption" id="mcap5">$1M MC</div>
+    </div>
+  </div>
+  <div class="mile-progress">MC: <span id="mileCurrentMC">...</span></div>
+</div>
 
 <div class="main-grid">
   <div class="col-left">
@@ -821,6 +933,251 @@ function shareScore(){
   );
   window.open('https://twitter.com/intent/tweet?text='+txt,'_blank');
 }
+
+// ── Mystery Box System ────────────────────────────────────────────────────
+const MYSTERY_BOXES = [
+  { emoji:'🦞', reward:'+2,000 $LOBSTARGAMES', desc:'A small claw of luck! Airdropped at $50K MC milestone.', chance:35 },
+  { emoji:'⭐', reward:'+5,000 $LOBSTARGAMES', desc:'The star shines on you! Airdropped at $50K MC milestone.', chance:25 },
+  { emoji:'🔥', reward:'+10,000 $LOBSTARGAMES', desc:'FIRE DROP! Big bag incoming at $50K MC milestone.', chance:20 },
+  { emoji:'💎', reward:'+25,000 $LOBSTARGAMES', desc:'DIAMOND CLAW! Massive airdrop waiting at $50K MC.', chance:12 },
+  { emoji:'👑', reward:'+50,000 $LOBSTARGAMES', desc:'LEGENDARY DROP! You are the lobster king. Airdrop at $50K MC.', chance:6 },
+  { emoji:'🚀', reward:'2x POINT MULTIPLIER', desc:'Double points on your next 5 hands! Activating now...', chance:2 },
+];
+
+let mysteryBoxPending = false;
+let pointMultiplier = 1;
+let multiplierHands = 0;
+let totalBoxesFound = 0;
+
+function rollMysteryBox() {
+  const roll = Math.random() * 100;
+  let cumulative = 0;
+  for (const box of MYSTERY_BOXES) {
+    cumulative += box.chance;
+    if (roll < cumulative) return box;
+  }
+  return MYSTERY_BOXES[0];
+}
+
+function showMysteryBoxNotif() {
+  const notif = document.getElementById('mboxNotif');
+  if (notif) { notif.style.display = 'block'; setTimeout(() => { notif.style.display='none'; }, 8000); }
+}
+
+function openMysteryBox() {
+  const box = rollMysteryBox();
+  document.getElementById('mboxEmoji').textContent   = box.emoji;
+  document.getElementById('mboxReward').textContent  = box.reward;
+  document.getElementById('mboxDesc').textContent    = box.desc;
+  document.getElementById('mysteryBoxOverlay').classList.add('show');
+  document.getElementById('mboxNotif').style.display = 'none';
+  mysteryBoxPending = false;
+  totalBoxesFound++;
+
+  // Handle multiplier
+  if (box.reward.includes('MULTIPLIER')) {
+    pointMultiplier = 2;
+    multiplierHands = 5;
+    addTerminalMsg('🚀 2x POINT MULTIPLIER ACTIVATED! (5 hands)');
+  } else {
+    addTerminalMsg('🎁 Mystery box found: ' + box.reward);
+  }
+}
+
+function closeMysteryBox() {
+  document.getElementById('mysteryBoxOverlay').classList.remove('show');
+}
+
+// Trigger mystery box randomly on wins (5% per win, increases with streak)
+function checkMysteryBoxTrigger(isWin, streak) {
+  if (!isWin || mysteryBoxPending) return;
+  const baseChance = 5;
+  const streakBonus = Math.min(streak * 2, 15); // max +15%
+  const totalChance = baseChance + streakBonus;
+  if (Math.random() * 100 < totalChance) {
+    mysteryBoxPending = true;
+    setTimeout(showMysteryBoxNotif, 1500);
+  }
+}
+
+// Close on overlay click
+document.getElementById('mysteryBoxOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeMysteryBox();
+});
+
+
+
+// ── MILESTONE TRACKER ──────────────────────────────────────────────────
+const MILESTONE_TARGETS = [0, 10000, 50000, 100000, 1000000];
+const MILESTONE_IDS      = [1, 2, 3, 4, 5];
+
+function updateMilestones(mcUSD) {
+  let currentMC = mcUSD || 0;
+  let display = currentMC >= 1000000 ? (currentMC/1000000).toFixed(2)+'M'
+              : currentMC >= 1000    ? (currentMC/1000).toFixed(1)+'K'
+              : '$'+currentMC.toFixed(0);
+  const el = document.getElementById('mileCurrentMC');
+  if (el) el.textContent = '$'+display;
+
+  MILESTONE_TARGETS.forEach((target, i) => {
+    const circle = document.getElementById('mnode'+(i+1));
+    const cap    = document.getElementById('mcap'+(i+1));
+    if (!circle || !cap) return;
+    if (currentMC >= target) {
+      circle.classList.add('done'); circle.classList.remove('active');
+      cap.classList.add('done');    cap.classList.remove('active');
+    } else if (currentMC >= (MILESTONE_TARGETS[i-1]||0)) {
+      circle.classList.add('active'); circle.classList.remove('done');
+      cap.classList.add('active');    cap.classList.remove('done');
+    }
+  });
+
+  // 🎉 $50K milestone hit — trigger mystery box popup on game page
+  if (currentMC >= 50000 && !sessionStorage.getItem('50k_celebrated')) {
+    sessionStorage.setItem('50k_celebrated','1');
+    if (typeof showMysteryBoxMilestone === 'function') showMysteryBoxMilestone();
+  }
+}
+
+// Simulate MC from price * supply (replace with real API after launch)
+(function tickMilestone(){
+  const priceEl = document.getElementById('tkPrice');
+  if (priceEl) {
+    const price = parseFloat(priceEl.textContent.replace('$','')) || 0;
+    updateMilestones(price * 1_000_000_000);
+  } else {
+    updateMilestones(0); // landing page default
+  }
+  setTimeout(tickMilestone, 10000);
+})();
+
+
+// ── MYSTERY BOX ────────────────────────────────────────────────────────
+const MYSTERY_REWARDS = [
+  { weight:40, icon:'🦞', title:'LOBSTAR STASH',    reward:'1,000 $LOBSTARGAMES',  desc:'Stay claw-some! You earned a token airdrop.',                  type:'tokens', amount:1000   },
+  { weight:30, icon:'⭐', title:'STAR REWARD',       reward:'5,000 $LOBSTARGAMES',  desc:'Shining bright! A bigger token drop incoming.',                type:'tokens', amount:5000   },
+  { weight:15, icon:'🔥', title:'BURN BONUS',        reward:'10,000 $LOBSTARGAMES', desc:'You're on fire! Top tier token reward locked in.',             type:'tokens', amount:10000  },
+  { weight:10, icon:'👑', title:'DEGEN ROYALE',      reward:'25,000 $LOBSTARGAMES', desc:'The claw has chosen wisely. Legendary drop incoming.',          type:'tokens', amount:25000  },
+  { weight: 4, icon:'💎', title:'DIAMOND CLAW',      reward:'50,000 $LOBSTARGAMES', desc:'Ultra rare! You just won the biggest mystery box drop.',        type:'tokens', amount:50000  },
+  { weight: 1, icon:'🌙', title:'MOONSHOT',          reward:'100,000 $LOBSTARGAMES',desc:'ONE IN A HUNDRED. The lobster gods smile upon you. WAGMI.',     type:'tokens', amount:100000 },
+];
+
+let mysteryPendingReward = null;
+let mysteryEligibleWallet = null;
+
+function pickMysteryReward() {
+  const total = MYSTERY_REWARDS.reduce((s,r)=>s+r.weight,0);
+  let rand = Math.random()*total;
+  for (const r of MYSTERY_REWARDS) { rand -= r.weight; if (rand <= 0) return r; }
+  return MYSTERY_REWARDS[0];
+}
+
+function showMysteryBox(trigger) {
+  // trigger: 'streak3' | 'streak5' | 'points10k' | 'milestone50k'
+  const triggers = {
+    streak3:     { sub:'3 WIN STREAK 🔥',      eligible:true  },
+    streak5:     { sub:'5 WIN STREAK 💎',       eligible:true  },
+    points10k:   { sub:'10,000 POINTS REACHED', eligible:true  },
+    milestone50k:{ sub:'$50K MC MILESTONE 🎉',  eligible:true  },
+  };
+  const t = triggers[trigger] || { sub:'ACTIVE PLAYER REWARD', eligible:true };
+
+  document.getElementById('mysteryIcon').textContent = '🎁';
+  document.getElementById('mysteryTitle').textContent = 'MYSTERY BOX';
+  document.getElementById('mysterySub').textContent = t.sub;
+  document.getElementById('mysteryReward').textContent = '???';
+  document.getElementById('mysteryDesc').textContent = 'Click OPEN BOX to reveal your reward!';
+  document.getElementById('mysteryBtn').textContent = '🎲 OPEN BOX';
+  document.getElementById('mysteryBtn').onclick = claimMysteryReward;
+  mysteryPendingReward = null;
+
+  const overlay = document.getElementById('mysteryOverlay');
+  overlay.classList.add('active');
+  document.getElementById('mysteryBox').classList.add('mystery-spin');
+  setTimeout(()=>document.getElementById('mysteryBox').classList.remove('mystery-spin'),1000);
+}
+
+function showMysteryBoxMilestone() { showMysteryBox('milestone50k'); }
+
+function claimMysteryReward() {
+  if (mysteryPendingReward) { closeMysteryBox(); return; }
+
+  const reward = pickMysteryReward();
+  mysteryPendingReward = reward;
+
+  // Shake animation
+  const box = document.getElementById('mysteryBox');
+  box.classList.add('mystery-shake');
+  setTimeout(()=>box.classList.remove('mystery-shake'), 500);
+
+  // Reveal after shake
+  setTimeout(()=>{
+    document.getElementById('mysteryIcon').textContent = reward.icon;
+    document.getElementById('mysteryTitle').textContent = reward.title;
+    document.getElementById('mysteryReward').textContent = reward.reward;
+    document.getElementById('mysteryDesc').textContent = reward.desc;
+    document.getElementById('mysteryBtn').textContent = '✅ CLAIM — DM @LobstarGames';
+    document.getElementById('mysteryBtn').onclick = ()=>{
+      window.open('https://x.com/LobstarGames','_blank');
+      // Log to terminal
+      if (typeof logTerm === 'function') {
+        logTerm(`🎁 Mystery box! ${walletAddr.slice(0,8)}... won ${reward.reward}`,'gold');
+      }
+      closeMysteryBox();
+    };
+  }, 600);
+}
+
+function closeMysteryBox() {
+  document.getElementById('mysteryOverlay').classList.remove('active');
+  mysteryPendingReward = null;
+}
+
+// ── Trigger checks (called from game logic) ────────────────────────────
+function checkMysteryTriggers(wins, streak, points) {
+  const key = 'mbox_';
+  if (streak >= 5 && !sessionStorage.getItem(key+'streak5')) {
+    sessionStorage.setItem(key+'streak5','1');
+    setTimeout(()=>showMysteryBox('streak5'), 1200);
+  } else if (streak >= 3 && !sessionStorage.getItem(key+'streak3')) {
+    sessionStorage.setItem(key+'streak3','1');
+    setTimeout(()=>showMysteryBox('streak3'), 1200);
+  }
+  if (points >= 10000 && !sessionStorage.getItem(key+'pts10k')) {
+    sessionStorage.setItem(key+'pts10k','1');
+    setTimeout(()=>showMysteryBox('points10k'), 1200);
+  }
+}
+
 </script>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mbox-overlay" id="mysteryBoxOverlay">
+  <div class="mbox-card">
+    <span class="mbox-emoji" id="mboxEmoji">🎁</span>
+    <div class="mbox-title">MYSTERY BOX!</div>
+    <div class="mbox-reward" id="mboxReward">+5,000 $LOBSTARGAMES</div>
+    <div class="mbox-desc" id="mboxDesc">You found a mystery box! This reward will be airdropped to your wallet when we hit $50K MC.</div>
+    <button class="mbox-btn" onclick="closeMysteryBox()">🦞 CLAIM IT</button>
+  </div>
+</div>
+
+<!-- Mystery box notification -->
+<div class="mbox-notification" id="mboxNotif" onclick="openMysteryBox()">
+  🎁 MYSTERY BOX AVAILABLE!
+</div>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mystery-overlay" id="mysteryOverlay">
+  <div class="mystery-box" id="mysteryBox">
+    <button class="mystery-box-close" onclick="closeMysteryBox()">✕</button>
+    <div class="mystery-box-icon" id="mysteryIcon">🎁</div>
+    <div class="mystery-box-title" id="mysteryTitle">MYSTERY BOX</div>
+    <div class="mystery-box-sub" id="mysterySub">YOU'VE EARNED A REWARD</div>
+    <div class="mystery-box-reward" id="mysteryReward"></div>
+    <div class="mystery-box-desc" id="mysteryDesc"></div>
+    <button class="mystery-box-btn" id="mysteryBtn" onclick="claimMysteryReward()">🎲 OPEN BOX</button>
+  </div>
+</div>
 </body>
 </html>
