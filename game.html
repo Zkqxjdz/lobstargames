@@ -516,6 +516,7 @@ async function enterGame() {
   const v = document.getElementById('nameInput').value.trim();
   if (!v) { document.getElementById('nameInput').focus(); return; }
   playerName = v.toUpperCase();
+  localStorage.setItem('lobstar_handle', playerName);
   document.getElementById('nameOverlay').style.display = 'none';
   document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
 
@@ -546,6 +547,12 @@ async function enterGame() {
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
 }
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
+
+// Auto-fill saved handle
+const savedHandle = localStorage.getItem('lobstar_handle');
+if (savedHandle) {
+  document.getElementById('nameInput').value = savedHandle;
+}
 
 // ── DECK ──
 function buildDeck() {
