@@ -395,7 +395,7 @@ let cdTimer = null;
 
 // ── SUPABASE CONFIG ──
 const SUPA_URL = "https://mvakqyddivstvsbioptg.supabase.co";
-const SUPA_KEY = "sb_publishable_vXP8VP79bE0zIw1VsjSw9w_iYs72WZ-";
+const SUPA_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo";
 
 // ── TOP 3 FIXED BOTS (always stay ahead of real players) ──
 const TOP_BOTS = [
@@ -498,7 +498,7 @@ function enterGame() {
   document.getElementById('nameOverlay').style.display = 'none';
   document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
   leaderboard.push({name:playerName, pts:0, burned:0, isMe:true});
-  fetchRealPlayers(); updateUI(); startTicker(); startBots();
+  renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
   tlog('sys', `Welcome, ${playerName}. The house always burns.`);
   tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
   tlog('warn', `Min 100 | 1K chip fixed ✓ | SPLIT available`);
@@ -1071,6 +1071,7 @@ function shareScore(){
 
 // Init
 setBtns(true,false,false,false,false);
+growBotScores();
 renderLB();
 </script>
 
