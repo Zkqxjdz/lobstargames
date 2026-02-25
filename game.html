@@ -451,36 +451,6 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
   </div>
 </div>
 
-
-
-<!-- MYSTERY BOX OVERLAY -->
-<div class="mbox-overlay" id="mysteryBoxOverlay">
-  <div class="mbox-card">
-    <span class="mbox-emoji" id="mboxEmoji">🎁</span>
-    <div class="mbox-title">MYSTERY BOX!</div>
-    <div class="mbox-reward" id="mboxReward">+5,000 $LOBSTARGAMES</div>
-    <div class="mbox-desc" id="mboxDesc">You found a mystery box! This reward will be airdropped to your wallet when we hit $50K MC.</div>
-    <button class="mbox-btn" onclick="closeMysteryBox()">🦞 CLAIM IT</button>
-  </div>
-</div>
-
-<!-- Mystery box notification -->
-<div class="mbox-notification" id="mboxNotif" onclick="openMysteryBox()">
-  🎁 MYSTERY BOX AVAILABLE!
-</div>
-
-<!-- MYSTERY BOX OVERLAY -->
-<div class="mystery-overlay" id="mysteryOverlay">
-  <div class="mystery-box" id="mysteryBox">
-    <button class="mystery-box-close" onclick="closeMysteryBox()">✕</button>
-    <div class="mystery-box-icon" id="mysteryIcon">🎁</div>
-    <div class="mystery-box-title" id="mysteryTitle">MYSTERY BOX</div>
-    <div class="mystery-box-sub" id="mysterySub">YOU'VE EARNED A REWARD</div>
-    <div class="mystery-box-reward" id="mysteryReward"></div>
-    <div class="mystery-box-desc" id="mysteryDesc"></div>
-    <button class="mystery-box-btn" id="mysteryBtn" onclick="claimMysteryReward()">🎲 OPEN BOX</button>
-  </div>
-</div>
 <script>
 // ═══════════════════════════════════════════
 // LOBSTAR GAMES — Clean Rewrite v3
@@ -1180,5 +1150,34 @@ function checkMysteryTriggers(wins, streak, points) {
 }
 
 </script>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mbox-overlay" id="mysteryBoxOverlay">
+  <div class="mbox-card">
+    <span class="mbox-emoji" id="mboxEmoji">🎁</span>
+    <div class="mbox-title">MYSTERY BOX!</div>
+    <div class="mbox-reward" id="mboxReward">+5,000 $LOBSTARGAMES</div>
+    <div class="mbox-desc" id="mboxDesc">You found a mystery box! This reward will be airdropped to your wallet when we hit $50K MC.</div>
+    <button class="mbox-btn" onclick="closeMysteryBox()">🦞 CLAIM IT</button>
+  </div>
+</div>
+
+<!-- Mystery box notification -->
+<div class="mbox-notification" id="mboxNotif" onclick="openMysteryBox()">
+  🎁 MYSTERY BOX AVAILABLE!
+</div>
+
+<!-- MYSTERY BOX OVERLAY -->
+<div class="mystery-overlay" id="mysteryOverlay">
+  <div class="mystery-box" id="mysteryBox">
+    <button class="mystery-box-close" onclick="closeMysteryBox()">✕</button>
+    <div class="mystery-box-icon" id="mysteryIcon">🎁</div>
+    <div class="mystery-box-title" id="mysteryTitle">MYSTERY BOX</div>
+    <div class="mystery-box-sub" id="mysterySub">YOU'VE EARNED A REWARD</div>
+    <div class="mystery-box-reward" id="mysteryReward"></div>
+    <div class="mystery-box-desc" id="mysteryDesc"></div>
+    <button class="mystery-box-btn" id="mysteryBtn" onclick="claimMysteryReward()">🎲 OPEN BOX</button>
+  </div>
+</div>
 </body>
 </html>
