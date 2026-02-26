@@ -614,8 +614,9 @@ function playerHit() {
 }
 
 // ── STAND ──
-function playerStand() {
+async function playerStand() {
   tlog('info', `STAND [Hand ${activeHand+1}] — ${total(hands[activeHand])}`);
+  if (typeof raceState !== 'undefined' && raceState==='playing') await endRacePlaying();
   advanceHand();
 }
 
@@ -1108,6 +1109,7 @@ async function enterGame() {
     tlog('sys', `Welcome, ${playerName}. The house always burns.`);
   }
   tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
+  document.getElementById('raceBtn').style.display = 'block';
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
 }
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
@@ -1247,10 +1249,15 @@ let raceState = 'idle';
 
 function openRaceLobby() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
-  document.getElementById('raceOverlay').classList.add('show');
-  loadOpenRaces();
+  try {
+    const el = document.getElementById('raceOverlay');
+    if (!el) { tlog('warn','ERROR: raceOverlay element not found!'); return; }
+    el.classList.add('show'); el.style.display='flex';
+    tlog('sys','Opening race lobby...');
+    loadOpenRaces();
+  } catch(e) { tlog('warn','openRaceLobby error: '+e.message); }
 }
-function closeRaceLobby() { document.getElementById('raceOverlay').classList.remove('show'); }
+function closeRaceLobby() { document.getElementById('raceOverlay').classList.remove('show'); document.getElementById('raceOverlay').style.display='none'; }
 
 function switchRaceTab(tab) {
   document.getElementById('tabFind').classList.toggle('active', tab==='find');
@@ -1288,7 +1295,7 @@ async function loadOpenRaces() {
       card.innerHTML = `<div class="race-card-info"><div class="race-card-host">🎲 ${race.created_by}'s RACE</div><div class="race-card-meta">${new Date(race.created_at).toLocaleTimeString()}</div></div><div style="text-align:right"><div class="race-card-bet">${race.bet.toLocaleString()} $LOBSTAR</div><div class="race-card-players">${count}/${race.max_players} PLAYERS</div></div><button class="race-join-btn" ${isFull||alreadyIn?'disabled':''} onclick="joinRace('${race.id}',${race.bet})">${alreadyIn?'JOINED':isFull?'FULL':'JOIN'}</button>`;
       el.appendChild(card);
     }
-  } catch(e) { el.innerHTML = '<div class="race-empty">Error loading. Try refresh.</div>'; }
+  } catch(e) { el.innerHTML = '<div class="race-empty">Error loading. Try refresh.</div>'; tlog('warn','loadOpenRaces error: '+e.message); }
 }
 
 async function quickMatch() {
@@ -1326,7 +1333,7 @@ async function createRace() {
     raceRole = 'host';
     closeRaceLobby();
     openWaitingRoom(raceId, currentRaceBet, currentRaceMax);
-  } catch(e) { tlog('warn','Create race failed: '+e); }
+  } catch(e) { tlog('warn','Create race error: '+e.message); }
 }
 
 async function joinRace(raceId, bet) {
@@ -1358,7 +1365,7 @@ function openWaitingRoom(raceId, bet, maxPlayers) {
   currentRaceId = raceId;
   document.getElementById('raceWaitBet').textContent = bet.toLocaleString();
   document.getElementById('raceWaitMax').textContent = maxPlayers;
-  document.getElementById('raceWaitOverlay').classList.add('show');
+  document.getElementById('raceWaitOverlay').classList.add('show'); document.getElementById('raceWaitOverlay').style.display='flex';
   pollWaitingRoom();
 }
 
@@ -1378,7 +1385,7 @@ function pollWaitingRoom() {
       updateWaitingRoomUI(players, race);
       if (race.status === 'playing') {
         clearInterval(racePollingInterval);
-        document.getElementById('raceWaitOverlay').classList.remove('show');
+        document.getElementById('raceWaitOverlay').classList.remove('show'); document.getElementById('raceWaitOverlay').style.display='none';
         beginRacePlaying();
       }
     } catch(e) {}
@@ -1421,7 +1428,7 @@ async function startRace() {
     headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
     body:JSON.stringify({status:'playing',started_at:new Date().toISOString()})
   });
-  document.getElementById('raceWaitOverlay').classList.remove('show');
+  document.getElementById('raceWaitOverlay').classList.remove('show'); document.getElementById('raceWaitOverlay').style.display='none';
   beginRacePlaying();
 }
 
@@ -1562,11 +1569,11 @@ function showRaceResults(results,dealerScore,totalPot,winnerCount,raceBet) {
     row.innerHTML=`<div class="rrname" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${medal}${isMe?'★ ':''}${p.handle}</div><div class="rrscore">Score: ${p.score||'BUST'}</div><div class="rrpayout" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${p.payout?'+'+p.payout.toLocaleString():'-'+raceBet.toLocaleString()}</div>`;
     list.appendChild(row);
   });
-  document.getElementById('raceResultsOverlay').classList.add('show');
+  document.getElementById('raceResultsOverlay').classList.add('show'); document.getElementById('raceResultsOverlay').style.display='flex';
 }
 
 function closeRaceResults() {
-  document.getElementById('raceResultsOverlay').classList.remove('show');
+  document.getElementById('raceResultsOverlay').classList.remove('show'); document.getElementById('raceResultsOverlay').style.display='none';
   document.getElementById('raceBar').classList.remove('show');
   raceState='idle'; currentRaceId=null; raceRole=null;
   newHand();
@@ -1576,7 +1583,7 @@ function leaveRace() {
   clearInterval(racePollingInterval); clearInterval(racePollInterval);
   if(currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
   currentRaceId=null; raceRole=null; raceState='idle';
-  document.getElementById('raceWaitOverlay').classList.remove('show');
+  document.getElementById('raceWaitOverlay').classList.remove('show'); document.getElementById('raceWaitOverlay').style.display='none';
   tlog('warn','Left the race.');
 }
 
@@ -1588,12 +1595,7 @@ function buildRaceDeck() {
   return d;
 }
 
-// Hook playerStand to also submit race hand
-const _origPlayerStand = playerStand;
-playerStand = async function() {
-  if (raceState==='playing') await endRacePlaying();
-  _origPlayerStand();
-};
+// playerStand race hook handled inside playerStand() directly
 
 // ── SHARE SCORE ──
 function shareScore() {
@@ -1682,7 +1684,7 @@ renderLB();
 
 
 <!-- RACE BUTTON (fixed bottom right) -->
-<button class="race-btn" onclick="openRaceLobby()">⚔️ RACE MODE</button>
+<button class="race-btn" id="raceBtn" onclick="openRaceLobby()" style="display:none">⚔️ RACE MODE</button>
 
 <!-- RACE LOBBY OVERLAY -->
 <div class="race-overlay" id="raceOverlay">
