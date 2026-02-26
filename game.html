@@ -254,6 +254,92 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .broke-share-btn:hover{background:rgba(255,255,255,0.1);}
 .broke-ref-btn{background:rgba(0,255,136,0.06);color:var(--green);border:1px solid rgba(0,255,136,0.3);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px;border-radius:4px;cursor:pointer;}
 .broke-ref-btn:hover{background:rgba(0,255,136,0.12);}
+
+/* ── RACE MODE ── */
+.race-btn{position:fixed;bottom:20px;right:20px;background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff9900;font-family:'Bebas Neue',sans-serif;font-size:16px;letter-spacing:3px;padding:12px 22px;border-radius:4px;cursor:pointer;z-index:500;animation:npulse 2s ease infinite;box-shadow:0 4px 20px rgba(255,100,0,0.4);}
+.race-btn:hover{transform:scale(1.05);}
+
+/* RACE LOBBY */
+.race-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:8000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.race-overlay.show{display:flex;animation:pgin .3s ease;}
+.race-lobby{background:var(--panel);border:2px solid rgba(255,184,0,0.35);border-radius:8px;padding:28px 32px;max-width:680px;width:96%;max-height:90vh;overflow-y:auto;}
+.race-lobby-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:5px;color:var(--gold);text-align:center;margin-bottom:4px;}
+.race-lobby-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;margin-bottom:20px;}
+.race-tabs{display:flex;gap:6px;margin-bottom:18px;}
+.race-tab{flex:1;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:9px;border-radius:3px;cursor:pointer;border:1px solid rgba(255,184,0,0.2);background:transparent;color:var(--text-dim);}
+.race-tab.active{background:rgba(255,184,0,0.1);border-color:var(--gold);color:var(--gold);}
+.race-tab-content{display:none;}.race-tab-content.show{display:block;}
+
+/* OPEN RACES LIST */
+.race-list{display:flex;flex-direction:column;gap:8px;margin-bottom:14px;max-height:280px;overflow-y:auto;}
+.race-list::-webkit-scrollbar{width:3px;}
+.race-list::-webkit-scrollbar-thumb{background:var(--gold-dim);}
+.race-card{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.15);border-radius:4px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.race-card:hover{border-color:rgba(255,184,0,0.35);}
+.race-card-info{flex:1;}
+.race-card-host{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--white);}
+.race-card-meta{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);margin-top:2px;}
+.race-card-bet{font-family:'Bebas Neue',sans-serif;font-size:18px;color:var(--gold);}
+.race-card-players{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--green);margin-top:2px;text-align:right;}
+.race-join-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:8px 18px;border-radius:3px;cursor:pointer;white-space:nowrap;}
+.race-join-btn:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+.race-join-btn:disabled{opacity:0.4;cursor:not-allowed;}
+.race-empty{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);text-align:center;padding:24px;}
+
+/* CREATE RACE */
+.race-create-form{display:flex;flex-direction:column;gap:10px;}
+.race-form-label{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;color:var(--text-dim);margin-bottom:3px;}
+.race-bet-chips{display:flex;gap:8px;flex-wrap:wrap;}
+.race-bet-chip{background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.2);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:1px;padding:8px 16px;border-radius:3px;cursor:pointer;}
+.race-bet-chip.sel{background:rgba(255,184,0,0.15);border-color:var(--gold);}
+.race-create-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:13px;border-radius:4px;cursor:pointer;margin-top:6px;}
+.race-create-btn:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+.race-quickmatch-btn{background:linear-gradient(180deg,#006633,#003d1f);color:var(--green);border:2px solid rgba(0,255,136,0.4);font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:13px;border-radius:4px;cursor:pointer;width:100%;margin-bottom:8px;}
+.race-quickmatch-btn:hover{background:linear-gradient(180deg,#008844,#005522);}
+
+/* RACE WAITING ROOM */
+.race-waiting{text-align:center;}
+.race-waiting-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--gold);margin-bottom:6px;}
+.race-waiting-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:20px;}
+.race-players-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px;}
+.race-player-slot{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:4px;padding:14px;text-align:center;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.race-player-slot.filled{border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.04);}
+.race-player-slot.me{border-color:var(--gold);background:rgba(255,184,0,0.08);}
+.race-player-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--white);}
+.race-player-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;}
+.race-player-empty{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,184,0,0.2);letter-spacing:2px;}
+.race-start-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:14px 40px;border-radius:4px;cursor:pointer;animation:npulse 1s ease infinite;margin-bottom:10px;}
+.race-start-btn:disabled{opacity:0.3;animation:none;cursor:not-allowed;}
+.race-leave-btn{background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:8px 20px;border-radius:3px;cursor:pointer;}
+
+/* RACE GAME - live race bar at top */
+.race-bar{background:rgba(0,0,0,0.8);border:1px solid rgba(255,184,0,0.2);border-radius:4px;padding:10px 14px;margin-bottom:10px;display:none;}
+.race-bar.show{display:block;}
+.race-bar-title{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;text-align:center;}
+.race-players-live{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
+.race-player-live{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:3px;padding:6px 10px;text-align:center;min-width:100px;}
+.race-player-live.me-live{border-color:var(--gold);}
+.race-player-live.done{border-color:rgba(0,255,136,0.3);}
+.race-player-live.bust{border-color:rgba(255,51,0,0.3);}
+.rpl-name{font-family:'Bebas Neue',sans-serif;font-size:13px;color:var(--white);}
+.rpl-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:2px;}
+.rpl-score{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);}
+
+/* RACE RESULTS */
+.race-results-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.race-results-overlay.show{display:flex;animation:pgin .4s ease;}
+.race-results-box{background:var(--panel);border:2px solid rgba(255,184,0,0.4);border-radius:8px;padding:30px 34px;max-width:500px;width:95%;text-align:center;}
+.race-results-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:5px;color:var(--gold);margin-bottom:16px;}
+.race-results-list{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.race-result-row{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-radius:4px;border:1px solid rgba(255,184,0,0.12);}
+.race-result-row.winner{background:rgba(0,255,136,0.08);border-color:rgba(0,255,136,0.35);}
+.race-result-row.loser{background:rgba(255,51,0,0.05);border-color:rgba(255,51,0,0.2);}
+.race-result-row.push{background:rgba(255,184,0,0.05);}
+.rrname{font-family:'Bebas Neue',sans-serif;font-size:17px;}
+.rrscore{font-family:'Bebas Neue',sans-serif;font-size:15px;color:var(--text-dim);}
+.rrpayout{font-family:'Bebas Neue',sans-serif;font-size:18px;}
+.race-play-again-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:13px 40px;border-radius:4px;cursor:pointer;margin-right:8px;}
+.race-close-btn{background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:12px 24px;border-radius:3px;cursor:pointer;}
 </style>
 </head>
 <body>
@@ -1228,6 +1314,93 @@ renderLB();
       <button class="broke-claim-btn" onclick="claimAirdrop()">🪂 CLAIM AIRDROP — 5,000 CHIPS</button>
       <button class="broke-share-btn" onclick="shareRugged()">𝕏 SHARE "I GOT RUGGED BY @LOBSTARGAMES"</button>
       <button class="broke-ref-btn" onclick="closeBrokeAndOpenRef()">🔗 REFER A FREN — GET EXTRA 500 CHIPS</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- RACE BUTTON (fixed bottom right) -->
+<button class="race-btn" onclick="openRaceLobby()">⚔️ RACE MODE</button>
+
+<!-- RACE LOBBY OVERLAY -->
+<div class="race-overlay" id="raceOverlay">
+  <div class="race-lobby">
+    <div class="race-lobby-title">⚔️ RACE MODE</div>
+    <div class="race-lobby-sub">Same dealer. First to beat the house wins everyone's bet.</div>
+
+    <div class="race-tabs">
+      <button class="race-tab active" onclick="switchRaceTab('find')" id="tabFind">FIND RACE</button>
+      <button class="race-tab" onclick="switchRaceTab('create')" id="tabCreate">CREATE RACE</button>
+    </div>
+
+    <!-- FIND TAB -->
+    <div class="race-tab-content show" id="tabFindContent">
+      <button class="race-quickmatch-btn" onclick="quickMatch()">⚡ QUICK MATCH — JOIN ANY OPEN RACE</button>
+      <div class="race-list" id="raceList">
+        <div class="race-empty">Loading open races...</div>
+      </div>
+      <button onclick="loadOpenRaces()" style="width:100%;background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:2px;padding:7px;border-radius:3px;cursor:pointer;">↺ REFRESH</button>
+    </div>
+
+    <!-- CREATE TAB -->
+    <div class="race-tab-content" id="tabCreateContent">
+      <div class="race-create-form">
+        <div>
+          <div class="race-form-label">SELECT BET AMOUNT</div>
+          <div class="race-bet-chips" id="raceBetChips">
+            <div class="race-bet-chip sel" onclick="selectRaceBet(500)" id="rbc500">500</div>
+            <div class="race-bet-chip" onclick="selectRaceBet(1000)" id="rbc1000">1K</div>
+            <div class="race-bet-chip" onclick="selectRaceBet(2500)" id="rbc2500">2.5K</div>
+            <div class="race-bet-chip" onclick="selectRaceBet(5000)" id="rbc5000">5K</div>
+          </div>
+        </div>
+        <div>
+          <div class="race-form-label">MAX PLAYERS</div>
+          <div class="race-bet-chips" id="raceMaxChips">
+            <div class="race-bet-chip" onclick="selectRaceMax(2)" id="rmax2">1v1</div>
+            <div class="race-bet-chip sel" onclick="selectRaceMax(4)" id="rmax4">4 PLAYERS</div>
+          </div>
+        </div>
+        <button class="race-create-btn" onclick="createRace()">🚀 CREATE RACE</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px;text-align:center;">
+      <button onclick="closeRaceLobby()" style="background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:8px 24px;border-radius:3px;cursor:pointer;">CLOSE</button>
+    </div>
+  </div>
+</div>
+
+<!-- RACE WAITING ROOM -->
+<div class="race-overlay" id="raceWaitOverlay">
+  <div class="race-lobby">
+    <div class="race-waiting">
+      <div class="race-waiting-title">⏳ WAITING FOR PLAYERS</div>
+      <div class="race-waiting-sub" id="raceWaitSub">Share this race with frens or wait for auto-match</div>
+      <div class="race-players-grid" id="racePlayersGrid"></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:14px;">
+        BET: <span style="color:var(--gold)" id="raceWaitBet">—</span> &bull; MAX: <span id="raceWaitMax">4</span> PLAYERS
+      </div>
+      <button class="race-start-btn" id="raceStartBtn" onclick="startRace()" disabled>▶ START RACE</button><br>
+      <button class="race-leave-btn" onclick="leaveRace()">LEAVE RACE</button>
+    </div>
+  </div>
+</div>
+
+<!-- RACE LIVE BAR (inside game, above dealer) -->
+<div class="race-bar" id="raceBar">
+  <div class="race-bar-title">⚔️ RACE IN PROGRESS</div>
+  <div class="race-players-live" id="racePlayersLive"></div>
+</div>
+
+<!-- RACE RESULTS -->
+<div class="race-results-overlay" id="raceResultsOverlay">
+  <div class="race-results-box">
+    <div class="race-results-title" id="raceResultsTitle">RACE OVER!</div>
+    <div class="race-results-list" id="raceResultsList"></div>
+    <div>
+      <button class="race-play-again-btn" onclick="playAgainRace()">▶ PLAY AGAIN</button>
+      <button class="race-close-btn" onclick="closeRaceResults()">CLOSE</button>
     </div>
   </div>
 </div>
