@@ -1233,6 +1233,368 @@ async function registerReferral(isNewPlayer) {
   }catch(e){}
 }
 
+
+// ══════════════════════════════════════════
+// ── RACE MODE ──
+// ══════════════════════════════════════════
+let currentRaceId = null;
+let currentRaceBet = 500;
+let currentRaceMax = 4;
+let racePollingInterval = null;
+let racePollInterval = null;
+let raceRole = null;
+let raceState = 'idle';
+
+function openRaceLobby() {
+  if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
+  document.getElementById('raceOverlay').classList.add('show');
+  loadOpenRaces();
+}
+function closeRaceLobby() { document.getElementById('raceOverlay').classList.remove('show'); }
+
+function switchRaceTab(tab) {
+  document.getElementById('tabFind').classList.toggle('active', tab==='find');
+  document.getElementById('tabCreate').classList.toggle('active', tab==='create');
+  document.getElementById('tabFindContent').classList.toggle('show', tab==='find');
+  document.getElementById('tabCreateContent').classList.toggle('show', tab==='create');
+}
+function selectRaceBet(amt) {
+  currentRaceBet = amt;
+  [500,1000,2500,5000].forEach(a => { const el=document.getElementById('rbc'+a); if(el) el.classList.toggle('sel',a===amt); });
+}
+function selectRaceMax(n) {
+  currentRaceMax = n;
+  [2,4].forEach(a => { const el=document.getElementById('rmax'+a); if(el) el.classList.toggle('sel',a===n); });
+}
+
+async function loadOpenRaces() {
+  const el = document.getElementById('raceList');
+  el.innerHTML = '<div class="race-empty">Loading...</div>';
+  try {
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?status=eq.waiting&select=id,bet,max_players,created_by,created_at`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const races = await r.json();
+    if (!races.length) { el.innerHTML = '<div class="race-empty">No open races — create one!</div>'; return; }
+    el.innerHTML = '';
+    for (const race of races) {
+      const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${race.id}&select=handle`,
+        {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+      const players = await pr.json();
+      const count = players.length;
+      const isFull = count >= race.max_players;
+      const alreadyIn = players.some(p=>p.handle===playerName);
+      const card = document.createElement('div');
+      card.className = 'race-card';
+      card.innerHTML = `<div class="race-card-info"><div class="race-card-host">🎲 ${race.created_by}'s RACE</div><div class="race-card-meta">${new Date(race.created_at).toLocaleTimeString()}</div></div><div style="text-align:right"><div class="race-card-bet">${race.bet.toLocaleString()} $LOBSTAR</div><div class="race-card-players">${count}/${race.max_players} PLAYERS</div></div><button class="race-join-btn" ${isFull||alreadyIn?'disabled':''} onclick="joinRace('${race.id}',${race.bet})">${alreadyIn?'JOINED':isFull?'FULL':'JOIN'}</button>`;
+      el.appendChild(card);
+    }
+  } catch(e) { el.innerHTML = '<div class="race-empty">Error loading. Try refresh.</div>'; }
+}
+
+async function quickMatch() {
+  if (balance < 500) { showRefToast('NEED 500+ CHIPS!'); return; }
+  try {
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?status=eq.waiting&select=id,bet,max_players`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const races = await r.json();
+    for (const race of races) {
+      const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${race.id}&select=handle`,
+        {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+      const players = await pr.json();
+      if (players.length < race.max_players && !players.some(p=>p.handle===playerName)) {
+        joinRace(race.id, race.bet); return;
+      }
+    }
+  } catch(e) {}
+  createRace();
+}
+
+async function createRace() {
+  if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
+  if (balance < currentRaceBet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
+  try {
+    const deck = buildRaceDeck();
+    const dealerCards = [deck.pop(), deck.pop()];
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races`, {
+      method:'POST',
+      headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=representation'},
+      body:JSON.stringify({status:'waiting',bet:currentRaceBet,dealer_cards:JSON.stringify(dealerCards),max_players:currentRaceMax,created_by:playerName})
+    });
+    const data = await r.json();
+    const raceId = data[0].id;
+    await joinRaceAsPlayer(raceId);
+    raceRole = 'host';
+    closeRaceLobby();
+    openWaitingRoom(raceId, currentRaceBet, currentRaceMax);
+  } catch(e) { tlog('warn','Create race failed: '+e); }
+}
+
+async function joinRace(raceId, bet) {
+  if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
+  if (balance < bet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
+  currentRaceId = raceId;
+  currentRaceBet = bet;
+  await joinRaceAsPlayer(raceId);
+  raceRole = 'joiner';
+  closeRaceLobby();
+  try {
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${raceId}&select=bet,max_players`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const data = await r.json();
+    openWaitingRoom(raceId, data[0].bet, data[0].max_players);
+  } catch(e) { openWaitingRoom(raceId, bet, 4); }
+}
+
+async function joinRaceAsPlayer(raceId) {
+  currentRaceId = raceId;
+  await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands`, {
+    method:'POST',
+    headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({race_id:raceId,handle:playerName,status:'waiting',cards:'[]'})
+  });
+}
+
+function openWaitingRoom(raceId, bet, maxPlayers) {
+  currentRaceId = raceId;
+  document.getElementById('raceWaitBet').textContent = bet.toLocaleString();
+  document.getElementById('raceWaitMax').textContent = maxPlayers;
+  document.getElementById('raceWaitOverlay').classList.add('show');
+  pollWaitingRoom();
+}
+
+function pollWaitingRoom() {
+  clearInterval(racePollingInterval);
+  racePollingInterval = setInterval(async () => {
+    if (!currentRaceId) return;
+    try {
+      const rr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${currentRaceId}&select=status,bet,max_players`,
+        {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+      const rdata = await rr.json();
+      if (!rdata.length) return;
+      const race = rdata[0];
+      const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,status`,
+        {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+      const players = await pr.json();
+      updateWaitingRoomUI(players, race);
+      if (race.status === 'playing') {
+        clearInterval(racePollingInterval);
+        document.getElementById('raceWaitOverlay').classList.remove('show');
+        beginRacePlaying();
+      }
+    } catch(e) {}
+  }, 2000);
+}
+
+function updateWaitingRoomUI(players, race) {
+  const grid = document.getElementById('racePlayersGrid');
+  grid.innerHTML = '';
+  for (let i=0; i<race.max_players; i++) {
+    const p = players[i];
+    const isMe = p && p.handle === playerName;
+    const slot = document.createElement('div');
+    slot.className = 'race-player-slot'+(p?' filled':'')+(isMe?' me':'');
+    slot.innerHTML = p ? `<div class="race-player-name">${isMe?'★ ':''}${p.handle}</div><div class="race-player-status">${isMe?'YOU':'READY'}</div>` : '<div class="race-player-empty">WAITING...</div>';
+    grid.appendChild(slot);
+  }
+  const startBtn = document.getElementById('raceStartBtn');
+  if (raceRole==='host') { startBtn.disabled = players.length < 2; startBtn.textContent = players.length>=2?'▶ START RACE':'NEED 1 MORE PLAYER...'; }
+  else { startBtn.textContent='WAITING FOR HOST...'; startBtn.disabled=true; }
+}
+
+async function startRace() {
+  if (raceRole !== 'host') return;
+  clearInterval(racePollingInterval);
+  const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle`,
+    {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+  const players = await pr.json();
+  const deck = buildRaceDeck();
+  for (const p of players) {
+    const cards = [deck.pop(), deck.pop()];
+    await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(p.handle)}`, {
+      method:'PATCH',
+      headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({cards:JSON.stringify(cards),status:'playing'})
+    });
+  }
+  await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${currentRaceId}`, {
+    method:'PATCH',
+    headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({status:'playing',started_at:new Date().toISOString()})
+  });
+  document.getElementById('raceWaitOverlay').classList.remove('show');
+  beginRacePlaying();
+}
+
+async function beginRacePlaying() {
+  raceState = 'playing';
+  try {
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}&select=cards`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const data = await r.json();
+    if (!data.length) return;
+    const myCards = JSON.parse(data[0].cards);
+    if (balance < currentRaceBet) { tlog('warn','Not enough chips!'); leaveRace(); return; }
+    balance -= currentRaceBet; bet = currentRaceBet; updateUI();
+    buildDeck();
+    hands=[myCards]; dealerHand=[]; isSplit=false; activeHand=0; handResults=[];
+    gameState='playing';
+    document.getElementById('raceBar').classList.add('show');
+    renderAllHands();
+    setSB('dealerScore','?'); setSB('hand0score',total(hands[0]));
+    document.getElementById('dealerCards').innerHTML='';
+    const fd=document.createElement('div'); fd.className='card facedown';
+    document.getElementById('dealerCards').appendChild(fd);
+    setBtns(false,true,true,balance>=currentRaceBet,false);
+    tlog('sys','⚔️ RACE STARTED! Beat the dealer. Winner takes all bets!');
+    tlog('info',`Your hand: ${hStr(hands[0])} (${total(hands[0])})`);
+    pollRacePlayers();
+    if (isBJ(hands[0])) { tlog('bj','BLACKJACK in the race!'); await submitRaceHand('blackjack',total(hands[0])); setBtns(false,false,false,false,false); }
+  } catch(e) { tlog('warn','Race start error: '+e); }
+}
+
+function pollRacePlayers() {
+  clearInterval(racePollInterval);
+  racePollInterval = setInterval(async () => {
+    if (!currentRaceId||raceState==='idle') return;
+    try {
+      const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,status,score`,
+        {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+      const players = await r.json();
+      updateRaceBar(players);
+      const allDone = players.length>0 && players.every(p=>['done','bust','blackjack'].includes(p.status));
+      if (allDone && raceState==='playing') { raceState='resolving'; clearInterval(racePollInterval); await resolveRace(); }
+    } catch(e) {}
+  }, 1500);
+}
+
+function updateRaceBar(players) {
+  const el=document.getElementById('racePlayersLive'); el.innerHTML='';
+  players.forEach(p => {
+    const isMe=p.handle===playerName;
+    const div=document.createElement('div');
+    div.className='race-player-live'+(isMe?' me-live':'')+(['done','blackjack'].includes(p.status)?' done':p.status==='bust'?' bust':'');
+    div.innerHTML=`<div class="rpl-name">${isMe?'★ ':''}${p.handle}</div><div class="rpl-score">${p.score||'?'}</div><div class="rpl-status">${p.status.toUpperCase()}</div>`;
+    el.appendChild(div);
+  });
+}
+
+async function endRacePlaying() {
+  if (raceState!=='playing') return;
+  const myScore=total(hands[0]);
+  const myStatus=isBJ(hands[0])?'blackjack':myScore>21?'bust':'done';
+  await submitRaceHand(myStatus,myScore);
+  setBtns(false,false,false,false,false);
+  tlog('info',`⚔️ Locked in: ${myScore}. Waiting for others...`);
+}
+
+async function submitRaceHand(status, score) {
+  await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`, {
+    method:'PATCH',
+    headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({status:status,score:score,cards:JSON.stringify(hands[0])})
+  });
+}
+
+async function resolveRace() {
+  try {
+    const rr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${currentRaceId}&select=dealer_cards,bet`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const rdata = await rr.json();
+    const dealerCards = JSON.parse(rdata[0].dealer_cards);
+    const raceBet = rdata[0].bet;
+    dealerHand=dealerCards;
+    const tmpDeck=buildRaceDeck();
+    while(total(dealerHand)<17) dealerHand.push(tmpDeck.pop());
+    const ds=total(dealerHand);
+    revealDealer();
+    tlog('info',`DEALER: ${hStr(dealerHand)} = ${ds}`);
+    const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,score,status`,
+      {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+    const players = await pr.json();
+    const results = players.map(p => {
+      let result,payout=0;
+      if(p.status==='bust'){result='bust';}
+      else if(p.status==='blackjack'&&ds!==21){result='blackjack';}
+      else if(ds>21||(p.score>ds)){result='win';}
+      else if(p.score===ds){result='push';payout=raceBet;}
+      else{result='lose';}
+      return{...p,result,payout};
+    });
+    const winners=results.filter(p=>p.result==='win'||p.result==='blackjack');
+    const totalPot=raceBet*players.length;
+    if(winners.length>0){
+      const share=Math.floor(totalPot/winners.length);
+      results.forEach(p=>{if(p.result==='win'||p.result==='blackjack')p.payout=share;else if(p.result==='push')p.payout=raceBet;else p.payout=0;});
+    }
+    const me=results.find(p=>p.handle===playerName);
+    if(me){
+      balance+=me.payout; updateUI();
+      if(me.result==='win'||me.result==='blackjack'){wins++;streak++;tlog('twin',`⚔️ RACE WIN! +${me.payout.toLocaleString()} $LOBSTAR`);}
+      else if(me.result==='push'){tlog('tinfo','⚔️ RACE PUSH — bet returned');}
+      else{losses++;streak=0;const burned=Math.floor(raceBet*0.8);burnTokens(burned);tlog('tlose',`⚔️ RACE LOSS — ${burned.toLocaleString()} burned`);}
+      saveScore();
+    }
+    await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${currentRaceId}`, {
+      method:'PATCH',
+      headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Content-Type':'application/json','Prefer':'return=minimal'},
+      body:JSON.stringify({status:'done',finished_at:new Date().toISOString()})
+    });
+    showRaceResults(results,ds,totalPot,winners.length,raceBet);
+    raceState='done';
+  } catch(e){ tlog('warn','Resolve error: '+e); }
+}
+
+function showRaceResults(results,dealerScore,totalPot,winnerCount,raceBet) {
+  const me=results.find(p=>p.handle===playerName);
+  const iWon=me&&(me.result==='win'||me.result==='blackjack');
+  document.getElementById('raceResultsTitle').textContent=iWon?'🏆 YOU WIN THE RACE!':'💀 RACE OVER';
+  document.getElementById('raceResultsTitle').style.color=iWon?'var(--green)':'var(--red-glow)';
+  const list=document.getElementById('raceResultsList');
+  list.innerHTML=`<div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-dim);text-align:center;margin-bottom:8px">DEALER: ${dealerScore} | POT: ${totalPot.toLocaleString()} | ${winnerCount} WINNER(S)</div>`;
+  const sorted=[...results].sort((a,b)=>({'blackjack':0,'win':1,'push':2,'lose':3,'bust':4}[a.result]||3)-({'blackjack':0,'win':1,'push':2,'lose':3,'bust':4}[b.result]||3));
+  sorted.forEach((p,i)=>{
+    const isMe=p.handle===playerName;
+    const isWin=p.result==='win'||p.result==='blackjack';
+    const isPush=p.result==='push';
+    const row=document.createElement('div');
+    row.className='race-result-row '+(isWin?'winner':isPush?'push':'loser');
+    const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
+    row.innerHTML=`<div class="rrname" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${medal}${isMe?'★ ':''}${p.handle}</div><div class="rrscore">Score: ${p.score||'BUST'}</div><div class="rrpayout" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${p.payout?'+'+p.payout.toLocaleString():'-'+raceBet.toLocaleString()}</div>`;
+    list.appendChild(row);
+  });
+  document.getElementById('raceResultsOverlay').classList.add('show');
+}
+
+function closeRaceResults() {
+  document.getElementById('raceResultsOverlay').classList.remove('show');
+  document.getElementById('raceBar').classList.remove('show');
+  raceState='idle'; currentRaceId=null; raceRole=null;
+  newHand();
+}
+function playAgainRace() { closeRaceResults(); setTimeout(()=>openRaceLobby(),300); }
+function leaveRace() {
+  clearInterval(racePollingInterval); clearInterval(racePollInterval);
+  if(currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+  currentRaceId=null; raceRole=null; raceState='idle';
+  document.getElementById('raceWaitOverlay').classList.remove('show');
+  tlog('warn','Left the race.');
+}
+
+function buildRaceDeck() {
+  const suits=['♠','♥','♦','♣'],ranks=['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
+  const d=[];
+  for(let s of suits)for(let r of ranks)d.push({r,s});
+  for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]];}
+  return d;
+}
+
+// Hook playerStand to also submit race hand
+const _origPlayerStand = playerStand;
+playerStand = async function() {
+  if (raceState==='playing') await endRacePlaying();
+  _origPlayerStand();
+};
+
 // ── SHARE SCORE ──
 function shareScore() {
   const txt=encodeURIComponent('🦞 Just played @LobstarGames!\n\n🏆 Points: '+totalPoints.toLocaleString()+'\n✓ Wins: '+wins+' | ✗ Losses: '+losses+'\n🔥 Burned: '+fmtN(totalBurned)+' $LOBSTARGAMES\n\nEvery loss burns supply forever.\nPlay now 👇\nlobstargames.win/game');
