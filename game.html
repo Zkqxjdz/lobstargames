@@ -1335,11 +1335,11 @@ async function getMyActiveRace() {
   return null;
 }
 function closeRaceLobby() {
-  const el = document.getElementById('raceOverlay');
-  el.classList.remove('show');
-  el.style.display = 'none';
-  el.style.visibility = 'hidden';
-  el.style.pointerEvents = 'none';
+  try {
+    const el = document.getElementById('raceOverlay');
+    el.removeAttribute('class');
+    el.style.cssText = 'display:none!important;visibility:hidden!important;pointer-events:none!important;z-index:-1!important;';
+  } catch(e) {}
 }
 
 function switchRaceTab(tab) {
@@ -1839,7 +1839,7 @@ history.pushState(null, '', window.location.href);
 // ESC key closes race overlays
 document.addEventListener('keydown', function(e) {
   if (e.key === 'Escape') {
-    if (document.getElementById('raceOverlay').style.display === 'flex') closeRaceLobby();
+    closeRaceLobby();
     if (document.getElementById('raceWaitOverlay').style.display === 'flex') {
       if (confirm('Leave the race waiting room?')) leaveRace();
     }
