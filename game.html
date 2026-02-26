@@ -1272,21 +1272,17 @@ let raceState = 'idle';
 
 async function openRaceLobby() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
-  try {
-    // Auto-cleanup any stale races silently
-    await cleanMyStaleRaces();
-    const el = document.getElementById('raceOverlay');
-    el.classList.add('show'); el.style.display='flex'; el.style.visibility='visible'; el.style.pointerEvents='all';
-    loadOpenRaces();
-  } catch(e) { tlog('warn','openRaceLobby error: '+e.message); }
+  // Always clean stale races first, never block
+  try { await cleanMyStaleRaces(); } catch(e) {}
+  const el = document.getElementById('raceOverlay');
+  el.classList.add('show'); el.style.display='flex'; el.style.visibility='visible'; el.style.pointerEvents='all';
+  loadOpenRaces();
 }
 
-// Silently remove player from any stale waiting/playing races
+// Silently remove player from any stale waiting/playing races (always runs)
 async function cleanMyStaleRaces() {
   if (!playerName) return;
   try {
-    // Only clean if we're not currently mid-race
-    if (raceState === 'playing' || raceState === 'waiting') return;
     const r = await fetch(
       `${SUPA_URL}/rest/v1/race_hands?handle=eq.${encodeURIComponent(playerName)}&select=race_id`,
       {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
@@ -1401,13 +1397,7 @@ async function quickMatch() {
 async function createRace() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   if (balance < currentRaceBet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
-  // Block duplicate race creation
-  const existingRace = await getMyActiveRace();
-  if (existingRace) {
-    tlog('warn', 'You already have an active race!');
-    showRefToast('ALREADY IN A RACE!');
-    return;
-  }
+
   try {
     const deck = buildRaceDeck();
     const dealerCards = [deck.pop(), deck.pop()];
@@ -1428,14 +1418,7 @@ async function createRace() {
 async function joinRace(raceId, bet) {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   if (balance < bet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
-  // Block joining if already in a race
-  const existingRace = await getMyActiveRace();
-  if (existingRace) {
-    if (existingRace.id === raceId) { showRefToast('ALREADY IN THIS RACE!'); return; }
-    tlog('warn','Already in another race — leave first.');
-    showRefToast('LEAVE CURRENT RACE FIRST!');
-    return;
-  }
+
   currentRaceId = raceId;
   currentRaceBet = bet;
   await joinRaceAsPlayer(raceId);
@@ -1761,6 +1744,12 @@ function closeRaceResults() {
   newHand();
 }
 function playAgainRace() { closeRaceResults(); setTimeout(()=>openRaceLobby(),300); }
+function leaveAndGoHome() {
+  clearInterval(racePollingInterval); clearInterval(racePollInterval); clearInterval(autoStartTimer);
+  if (currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
+  window.location.href = 'https://lobstargames.win';
+}
+
 function leaveRace() {
   clearInterval(racePollingInterval); clearInterval(racePollInterval); clearInterval(autoStartTimer);
   if(currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
@@ -2028,7 +2017,10 @@ renderLB();
         BET: <span style="color:var(--gold)" id="raceWaitBet">—</span> &bull; MAX: <span id="raceWaitMax">4</span> PLAYERS
       </div>
       <button class="race-start-btn" id="raceStartBtn" onclick="startRace()" disabled>▶ START RACE</button><br>
-      <button class="race-leave-btn" onclick="leaveRace()">← BACK TO GAME (LEAVE RACE)</button>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+      <button class="race-leave-btn" onclick="leaveRace()">← BACK TO GAME</button>
+      <button class="race-leave-btn" onclick="leaveAndGoHome()" style="background:rgba(255,50,50,0.08);border-color:rgba(255,50,50,0.3);color:rgba(255,100,100,0.8);">🏠 LEAVE & GO HOME</button>
+    </div>
     </div>
   </div>
 </div>
@@ -2046,7 +2038,8 @@ renderLB();
     <div class="race-results-list" id="raceResultsList"></div>
     <div>
       <button class="race-play-again-btn" onclick="playAgainRace()">▶ PLAY AGAIN</button>
-      <button class="race-close-btn" onclick="closeRaceResults()">CLOSE</button>
+      <button class="race-close-btn" onclick="closeRaceResults()">BACK TO GAME</button>
+      <button class="race-close-btn" onclick="leaveAndGoHome()" style="background:rgba(255,50,50,0.08);border-color:rgba(255,50,50,0.3);color:rgba(255,100,100,0.8);">🏠 GO HOME</button>
     </div>
   </div>
 </div>
