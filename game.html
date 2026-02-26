@@ -260,7 +260,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-btn:hover{transform:scale(1.05);}
 
 /* RACE LOBBY */
-.race-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:8000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.race-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.94);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 .race-overlay.show{display:flex;animation:pgin .3s ease;}
 .race-lobby{background:var(--panel);border:2px solid rgba(255,184,0,0.35);border-radius:8px;padding:28px 32px;max-width:680px;width:96%;max-height:90vh;overflow-y:auto;}
 .race-lobby-title{font-family:'Bebas Neue',sans-serif;font-size:34px;letter-spacing:5px;color:var(--gold);text-align:center;margin-bottom:4px;}
@@ -326,7 +326,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .rpl-score{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--gold);}
 
 /* RACE RESULTS */
-.race-results-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:9500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
+.race-results-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.95);z-index:99999;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
 .race-results-overlay.show{display:flex;animation:pgin .4s ease;}
 .race-results-box{background:var(--panel);border:2px solid rgba(255,184,0,0.4);border-radius:8px;padding:30px 34px;max-width:500px;width:95%;text-align:center;}
 .race-results-title{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:5px;color:var(--gold);margin-bottom:16px;}
@@ -1110,6 +1110,24 @@ async function enterGame() {
   }
   tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
   document.getElementById('raceBtn').style.display = 'block';
+  // Check if returning to an active race
+  const activeRace = await getMyActiveRace();
+  if (activeRace) {
+    tlog('warn', `⚔️ You have an active race! Click RACE MODE to rejoin.`);
+    showRefToast('⚔️ ACTIVE RACE — CLICK RACE MODE!');
+    // Flash the race button
+    const btn = document.getElementById('raceBtn');
+    btn.style.background = 'linear-gradient(180deg,#006633,#003d1f)';
+    btn.style.border = '2px solid #00ff88';
+    btn.style.color = '#00ff88';
+    btn.textContent = '⚔️ REJOIN RACE';
+    setTimeout(() => {
+      btn.style.background = '';
+      btn.style.border = '';
+      btn.style.color = '';
+      btn.textContent = '⚔️ RACE MODE';
+    }, 5000);
+  }
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
 }
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
@@ -1247,15 +1265,44 @@ let racePollInterval = null;
 let raceRole = null;
 let raceState = 'idle';
 
-function openRaceLobby() {
+async function openRaceLobby() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   try {
+    // Check if already in an active race
+    const existing = await getMyActiveRace();
+    if (existing) {
+      const confirmLeave = confirm(`You are already in a race!\nLeave and open lobby?`);
+      if (!confirmLeave) return;
+      await leaveRace();
+    }
     const el = document.getElementById('raceOverlay');
-    if (!el) { tlog('warn','ERROR: raceOverlay element not found!'); return; }
     el.classList.add('show'); el.style.display='flex';
-    tlog('sys','Opening race lobby...');
     loadOpenRaces();
   } catch(e) { tlog('warn','openRaceLobby error: '+e.message); }
+}
+
+// Check if this player is already in a waiting/playing race
+async function getMyActiveRace() {
+  try {
+    const r = await fetch(
+      `${SUPA_URL}/rest/v1/race_hands?handle=eq.${encodeURIComponent(playerName)}&select=race_id,status`,
+      {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
+    );
+    const hands = await r.json();
+    if (!hands.length) return null;
+    // Check if any of these races are still active
+    for (const h of hands) {
+      const rr = await fetch(
+        `${SUPA_URL}/rest/v1/races?id=eq.${h.race_id}&select=id,status`,
+        {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
+      );
+      const races = await rr.json();
+      if (races.length && (races[0].status==='waiting'||races[0].status==='playing')) {
+        return races[0];
+      }
+    }
+  } catch(e) {}
+  return null;
 }
 function closeRaceLobby() { document.getElementById('raceOverlay').classList.remove('show'); document.getElementById('raceOverlay').style.display='none'; }
 
@@ -1319,6 +1366,13 @@ async function quickMatch() {
 async function createRace() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   if (balance < currentRaceBet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
+  // Block duplicate race creation
+  const existingRace = await getMyActiveRace();
+  if (existingRace) {
+    tlog('warn', 'You already have an active race!');
+    showRefToast('ALREADY IN A RACE!');
+    return;
+  }
   try {
     const deck = buildRaceDeck();
     const dealerCards = [deck.pop(), deck.pop()];
@@ -1339,6 +1393,14 @@ async function createRace() {
 async function joinRace(raceId, bet) {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   if (balance < bet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
+  // Block joining if already in a race
+  const existingRace = await getMyActiveRace();
+  if (existingRace) {
+    if (existingRace.id === raceId) { showRefToast('ALREADY IN THIS RACE!'); return; }
+    tlog('warn','Already in another race — leave first.');
+    showRefToast('LEAVE CURRENT RACE FIRST!');
+    return;
+  }
   currentRaceId = raceId;
   currentRaceBet = bet;
   await joinRaceAsPlayer(raceId);
@@ -1361,12 +1423,42 @@ async function joinRaceAsPlayer(raceId) {
   });
 }
 
+let autoStartTimer = null;
+let autoStartSecs = 60;
+
 function openWaitingRoom(raceId, bet, maxPlayers) {
   currentRaceId = raceId;
   document.getElementById('raceWaitBet').textContent = bet.toLocaleString();
   document.getElementById('raceWaitMax').textContent = maxPlayers;
-  document.getElementById('raceWaitOverlay').classList.add('show'); document.getElementById('raceWaitOverlay').style.display='flex';
+  document.getElementById('raceWaitOverlay').classList.add('show');
+  document.getElementById('raceWaitOverlay').style.display='flex';
   pollWaitingRoom();
+  startAutoStartTimer(raceId);
+}
+
+function startAutoStartTimer(raceId) {
+  clearInterval(autoStartTimer);
+  autoStartSecs = 60;
+  autoStartTimer = setInterval(async () => {
+    autoStartSecs--;
+    const el = document.getElementById('raceAutoTimer');
+    if (el) el.textContent = autoStartSecs;
+    if (autoStartSecs <= 0) {
+      clearInterval(autoStartTimer);
+      // Auto-start with whoever is in
+      tlog('warn', '⏱ Auto-starting race with available players...');
+      if (raceRole === 'host') {
+        await startRace();
+      } else {
+        // Force race to start by patching status
+        await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}`, {
+          method:'PATCH',
+          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+          body:JSON.stringify({status:'playing', started_at:new Date().toISOString()})
+        });
+      }
+    }
+  }, 1000);
 }
 
 function pollWaitingRoom() {
@@ -1580,7 +1672,7 @@ function closeRaceResults() {
 }
 function playAgainRace() { closeRaceResults(); setTimeout(()=>openRaceLobby(),300); }
 function leaveRace() {
-  clearInterval(racePollingInterval); clearInterval(racePollInterval);
+  clearInterval(racePollingInterval); clearInterval(racePollInterval); clearInterval(autoStartTimer);
   if(currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
   currentRaceId=null; raceRole=null; raceState='idle';
   document.getElementById('raceWaitOverlay').classList.remove('show'); document.getElementById('raceWaitOverlay').style.display='none';
@@ -1740,7 +1832,7 @@ renderLB();
   <div class="race-lobby">
     <div class="race-waiting">
       <div class="race-waiting-title">⏳ WAITING FOR PLAYERS</div>
-      <div class="race-waiting-sub" id="raceWaitSub">Share this race with frens or wait for auto-match</div>
+      <div class="race-waiting-sub" id="raceWaitSub">Auto-starts when full or in <span id="raceAutoTimer" style="color:var(--gold)">60</span>s</div>
       <div class="race-players-grid" id="racePlayersGrid"></div>
       <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:14px;">
         BET: <span style="color:var(--gold)" id="raceWaitBet">—</span> &bull; MAX: <span id="raceWaitMax">4</span> PLAYERS
