@@ -301,10 +301,11 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-waiting{text-align:center;}
 .race-waiting-title{font-family:'Bebas Neue',sans-serif;font-size:28px;letter-spacing:4px;color:var(--gold);margin-bottom:6px;}
 .race-waiting-sub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:20px;}
-.race-players-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:20px;}
-.race-player-slot{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:4px;padding:14px;text-align:center;min-height:70px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-.race-player-slot.filled{border-color:rgba(0,255,136,0.3);background:rgba(0,255,136,0.04);}
-.race-player-slot.me{border-color:var(--gold);background:rgba(255,184,0,0.08);}
+.race-players-grid{position:relative;width:260px;height:260px;margin:0 auto 20px auto;}
+.race-players-circle-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60px;height:60px;border-radius:50%;background:rgba(255,184,0,0.06);border:2px solid rgba(255,184,0,0.3);display:flex;align-items:center;justify-content:center;font-size:22px;}
+.race-player-slot{position:absolute;width:80px;height:80px;border-radius:50%;background:rgba(255,184,0,0.04);border:2px solid rgba(255,184,0,0.15);display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;transition:all 0.3s;}
+.race-player-slot.filled{border-color:rgba(0,255,136,0.5);background:rgba(0,255,136,0.08);box-shadow:0 0 12px rgba(0,255,136,0.2);}
+.race-player-slot.me{border-color:var(--gold);background:rgba(255,184,0,0.1);box-shadow:0 0 16px rgba(255,184,0,0.3);}
 .race-player-name{font-family:'Bebas Neue',sans-serif;font-size:16px;color:var(--white);}
 .race-player-status{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--text-dim);margin-top:3px;}
 .race-player-empty{font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,184,0,0.2);letter-spacing:2px;}
@@ -1435,6 +1436,7 @@ let autoStartSecs = 60;
 
 function openWaitingRoom(raceId, bet, maxPlayers) {
   currentRaceId = raceId;
+  raceState = 'waiting';
   document.getElementById('raceWaitBet').textContent = bet.toLocaleString();
   document.getElementById('raceWaitMax').textContent = maxPlayers;
   document.getElementById('raceWaitOverlay').classList.add('show');
@@ -1452,18 +1454,26 @@ function startAutoStartTimer(raceId) {
     if (el) el.textContent = autoStartSecs;
     if (autoStartSecs <= 0) {
       clearInterval(autoStartTimer);
-      // Auto-start with whoever is in
-      tlog('warn', '⏱ Auto-starting race with available players...');
-      if (raceRole === 'host') {
-        await startRace();
-      } else {
-        // Force race to start by patching status
-        await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}`, {
-          method:'PATCH',
-          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-          body:JSON.stringify({status:'playing', started_at:new Date().toISOString()})
-        });
-      }
+      tlog('warn', '⏱ Auto-starting race...');
+      // Check player count
+      try {
+        const pr = await fetch(`${SUPA_URL}/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle`,
+          {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+        const players = await pr.json();
+        const realPlayers2 = players.filter(p => !p.handle.includes('DEALER_BOT'));
+        if (realPlayers2.length <= 1) {
+          // Solo — race vs system
+          await startSoloRace();
+        } else if (raceRole === 'host') {
+          await startRace();
+        } else {
+          await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}`, {
+            method:'PATCH',
+            headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+            body:JSON.stringify({status:'playing', started_at:new Date().toISOString()})
+          });
+        }
+      } catch(e) { if (raceRole==='host') await startRace(); }
     }
   }, 1000);
 }
@@ -1471,7 +1481,7 @@ function startAutoStartTimer(raceId) {
 function pollWaitingRoom() {
   clearInterval(racePollingInterval);
   racePollingInterval = setInterval(async () => {
-    if (!currentRaceId) return;
+    if (!currentRaceId || raceState !== 'waiting') { clearInterval(racePollingInterval); return; }
     try {
       const rr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?id=eq.${currentRaceId}&select=status,bet,max_players`,
         {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
@@ -1494,17 +1504,45 @@ function pollWaitingRoom() {
 function updateWaitingRoomUI(players, race) {
   const grid = document.getElementById('racePlayersGrid');
   grid.innerHTML = '';
-  for (let i=0; i<race.max_players; i++) {
+  // Center dealer icon
+  const center = document.createElement('div');
+  center.className = 'race-players-circle-center';
+  center.innerHTML = '🃏';
+  grid.appendChild(center);
+  // Position players in a circle
+  const total = race.max_players;
+  const radius = 95;
+  const cx = 130, cy = 130;
+  for (let i=0; i<total; i++) {
     const p = players[i];
     const isMe = p && p.handle === playerName;
+    // Start from left, go clockwise
+    const angle = (i / total) * 2 * Math.PI - Math.PI / 2;
+    const x = cx + radius * Math.cos(angle) - 40;
+    const y = cy + radius * Math.sin(angle) - 40;
     const slot = document.createElement('div');
     slot.className = 'race-player-slot'+(p?' filled':'')+(isMe?' me':'');
-    slot.innerHTML = p ? `<div class="race-player-name">${isMe?'★ ':''}${p.handle}</div><div class="race-player-status">${isMe?'YOU':'READY'}</div>` : '<div class="race-player-empty">WAITING...</div>';
+    slot.style.left = x + 'px';
+    slot.style.top = y + 'px';
+    slot.innerHTML = p
+      ? `<div class="race-player-name" style="font-size:9px;letter-spacing:1px;color:${isMe?'var(--gold)':'var(--green)'};font-family:'Bebas Neue',sans-serif;line-height:1.2;">${isMe?'★ ':''}${p.handle.length>8?p.handle.substring(0,8)+'..':p.handle}</div><div style="font-size:8px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;">${isMe?'YOU':'READY'}</div>`
+      : '<div style="font-size:18px;">⏳</div>';
     grid.appendChild(slot);
   }
   const startBtn = document.getElementById('raceStartBtn');
-  if (raceRole==='host') { startBtn.disabled = players.length < 2; startBtn.textContent = players.length>=2?'▶ START RACE':'NEED 1 MORE PLAYER...'; }
-  else { startBtn.textContent='WAITING FOR HOST...'; startBtn.disabled=true; }
+  if (raceRole==='host') {
+    if (players.length >= 2) {
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ START RACE (' + players.length + ' PLAYERS)';
+    } else {
+      startBtn.disabled = false;
+      startBtn.textContent = '⚡ START SOLO VS DEALER';
+      startBtn.onclick = () => startSoloRace(); // will reset to startRace() when 2+ players
+    }
+  } else {
+    startBtn.textContent = 'WAITING FOR HOST...';
+    startBtn.disabled = true;
+  }
 }
 
 async function startRace() {
@@ -1532,6 +1570,7 @@ async function startRace() {
 }
 
 async function beginRacePlaying() {
+  if (raceState === 'playing' || raceState === 'done') return;
   raceState = 'playing';
   try {
     const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}&select=cards`,
@@ -1575,12 +1614,20 @@ function pollRacePlayers() {
 
 function updateRaceBar(players) {
   const el=document.getElementById('racePlayersLive'); el.innerHTML='';
-  players.forEach(p => {
+  const emojis = ['🦞','🦀','🐙','🦑','🐡','🦈'];
+  const realPlayers = players.filter(p => !p.handle.includes('DEALER_BOT'));
+  realPlayers.forEach((p, i) => {
     const isMe=p.handle===playerName;
-    const div=document.createElement('div');
-    div.className='race-player-live'+(isMe?' me-live':'')+(['done','blackjack'].includes(p.status)?' done':p.status==='bust'?' bust':'');
-    div.innerHTML=`<div class="rpl-name">${isMe?'★ ':''}${p.handle}</div><div class="rpl-score">${p.score||'?'}</div><div class="rpl-status">${p.status.toUpperCase()}</div>`;
-    el.appendChild(div);
+    const isDone=['done','blackjack'].includes(p.status);
+    const isBust=p.status==='bust';
+    const seat=document.createElement('div');
+    seat.className='race-seat';
+    seat.innerHTML=`
+      <div class="race-seat-avatar ${isDone?'rpl-seat-done':isBust?'rpl-seat-bust':'rpl-seat-playing'} ${isMe?'me':'filled'}">${emojis[i%emojis.length]}</div>
+      <div class="race-seat-name ${isMe?'me-name':''}">${isMe?'★ ':''}${p.handle}</div>
+      <div class="race-seat-chips">${p.score||'?'}</div>
+      <div class="race-seat-status" style="color:${isDone?'var(--green)':isBust?'var(--red-glow)':'var(--gold)'}">${(p.status||'').toUpperCase()}</div>`;
+    el.appendChild(seat);
   });
 }
 
@@ -1672,7 +1719,16 @@ function showRaceResults(results,dealerScore,totalPot,winnerCount,raceBet) {
 }
 
 function closeRaceResults() {
-  document.getElementById('raceResultsOverlay').classList.remove('show'); document.getElementById('raceResultsOverlay').style.display='none';
+  clearInterval(racePollingInterval);
+  clearInterval(racePollInterval);
+  clearInterval(autoStartTimer);
+  ['raceResultsOverlay','raceWaitOverlay','raceOverlay'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.remove('show');
+    el.style.display = 'none';
+    el.style.visibility = 'hidden';
+    el.style.pointerEvents = 'none';
+  });
   document.getElementById('raceBar').classList.remove('show');
   raceState='idle'; currentRaceId=null; raceRole=null;
   newHand();
@@ -1750,6 +1806,32 @@ document.addEventListener('keydown', function(e) {
     if (document.getElementById('raceResultsOverlay').style.display === 'flex') closeRaceResults();
   }
 });
+
+
+function setBetQuick(amt) {
+  currentRaceBet = amt;
+  const inp = document.getElementById('raceBetInput');
+  if (inp) inp.value = amt;
+}
+
+// Solo race vs system dealer (1 player only)
+async function startSoloRace() {
+  tlog('sys', '⚔️ No opponents — racing solo vs dealer!');
+  // Add a ghost "DEALER" player so resolve logic works
+  await fetch(`${SUPA_URL}/rest/v1/race_hands`, {
+    method:'POST',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'resolution=merge-duplicates,return=minimal'},
+    body:JSON.stringify({race_id:currentRaceId, handle:'🤖 DEALER_BOT', status:'done', cards:'[]', score:0})
+  });
+  await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}`, {
+    method:'PATCH',
+    headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+    body:JSON.stringify({status:'playing', started_at:new Date().toISOString()})
+  });
+  document.getElementById('raceWaitOverlay').classList.remove('show');
+  document.getElementById('raceWaitOverlay').style.display='none';
+  beginRacePlaying();
+}
 
 // ── SHARE SCORE ──
 function shareScore() {
@@ -1867,12 +1949,21 @@ renderLB();
     <div class="race-tab-content" id="tabCreateContent">
       <div class="race-create-form">
         <div>
-          <div class="race-form-label">SELECT BET AMOUNT</div>
-          <div class="race-bet-chips" id="raceBetChips">
-            <div class="race-bet-chip sel" onclick="selectRaceBet(500)" id="rbc500">500</div>
-            <div class="race-bet-chip" onclick="selectRaceBet(1000)" id="rbc1000">1K</div>
-            <div class="race-bet-chip" onclick="selectRaceBet(2500)" id="rbc2500">2.5K</div>
-            <div class="race-bet-chip" onclick="selectRaceBet(5000)" id="rbc5000">5K</div>
+          <div class="race-form-label">BET AMOUNT (MIN 100)</div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input id="raceBetInput" type="number" min="100" max="10000" value="500" 
+              style="flex:1;background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.3);border-radius:3px;padding:10px 14px;font-family:'Bebas Neue',sans-serif;font-size:20px;color:var(--gold);outline:none;width:100%;"
+              oninput="currentRaceBet=Math.max(100,Math.min(10000,parseInt(this.value)||100))">
+            <div style="display:flex;flex-direction:column;gap:4px;">
+              <button onclick="document.getElementById('raceBetInput').value=Math.min(10000,(parseInt(document.getElementById('raceBetInput').value)||100)+500);currentRaceBet=parseInt(document.getElementById('raceBetInput').value);" style="background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:14px;padding:4px 10px;border-radius:3px;cursor:pointer;">+500</button>
+              <button onclick="document.getElementById('raceBetInput').value=Math.min(10000,(parseInt(document.getElementById('raceBetInput').value)||100)+1000);currentRaceBet=parseInt(document.getElementById('raceBetInput').value);" style="background:rgba(255,184,0,0.1);border:1px solid rgba(255,184,0,0.3);color:var(--gold);font-family:'Bebas Neue',sans-serif;font-size:14px;padding:4px 10px;border-radius:3px;cursor:pointer;">+1K</button>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;">
+            <button onclick="setBetQuick(500)" class="race-bet-chip">500</button>
+            <button onclick="setBetQuick(1000)" class="race-bet-chip">1K</button>
+            <button onclick="setBetQuick(2500)" class="race-bet-chip">2.5K</button>
+            <button onclick="setBetQuick(5000)" class="race-bet-chip">5K</button>
           </div>
         </div>
         <div>
@@ -1898,7 +1989,14 @@ renderLB();
     <div class="race-waiting">
       <div class="race-waiting-title">⏳ WAITING FOR PLAYERS</div>
       <div class="race-waiting-sub" id="raceWaitSub">Auto-starts when full or in <span id="raceAutoTimer" style="color:var(--gold)">60</span>s</div>
-      <div class="race-players-grid" id="racePlayersGrid"></div>
+      <div class="race-table-wrap" id="raceTableWrap">
+        <div class="race-table-felt"></div>
+        <div class="race-dealer-spot">
+          <div class="race-dealer-avatar">🃏</div>
+          <div class="race-dealer-label">DEALER</div>
+        </div>
+        <div class="race-seats" id="racePlayersGrid"></div>
+      </div>
       <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-dim);margin-bottom:14px;">
         BET: <span style="color:var(--gold)" id="raceWaitBet">—</span> &bull; MAX: <span id="raceWaitMax">4</span> PLAYERS
       </div>
@@ -1911,7 +2009,7 @@ renderLB();
 <!-- RACE LIVE BAR (inside game, above dealer) -->
 <div class="race-bar" id="raceBar">
   <div class="race-bar-title">⚔️ RACE IN PROGRESS</div>
-  <div class="race-players-live" id="racePlayersLive"></div>
+  <div class="race-seats" id="racePlayersLive" style="display:flex;justify-content:center;gap:20px;padding:8px 10px 4px;"></div>
 </div>
 
 <!-- RACE RESULTS -->
