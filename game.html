@@ -1276,7 +1276,7 @@ async function openRaceLobby() {
       await leaveRace();
     }
     const el = document.getElementById('raceOverlay');
-    el.classList.add('show'); el.style.display='flex';
+    el.classList.add('show'); el.style.display='flex'; el.style.visibility='visible'; el.style.pointerEvents='all';
     loadOpenRaces();
   } catch(e) { tlog('warn','openRaceLobby error: '+e.message); }
 }
@@ -1305,7 +1305,13 @@ async function getMyActiveRace() {
   } catch(e) {}
   return null;
 }
-function closeRaceLobby() { document.getElementById('raceOverlay').classList.remove('show'); document.getElementById('raceOverlay').style.display='none'; }
+function closeRaceLobby() {
+  const el = document.getElementById('raceOverlay');
+  el.classList.remove('show');
+  el.style.display = 'none';
+  el.style.visibility = 'hidden';
+  el.style.pointerEvents = 'none';
+}
 
 function switchRaceTab(tab) {
   document.getElementById('tabFind').classList.toggle('active', tab==='find');
@@ -1732,6 +1738,18 @@ window.addEventListener('popstate', function(e) {
 
 // Push state so popstate fires on back button
 history.pushState(null, '', window.location.href);
+
+
+// ESC key closes race overlays
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    if (document.getElementById('raceOverlay').style.display === 'flex') closeRaceLobby();
+    if (document.getElementById('raceWaitOverlay').style.display === 'flex') {
+      if (confirm('Leave the race waiting room?')) leaveRace();
+    }
+    if (document.getElementById('raceResultsOverlay').style.display === 'flex') closeRaceResults();
+  }
+});
 
 // ── SHARE SCORE ──
 function shareScore() {
