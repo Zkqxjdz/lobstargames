@@ -356,7 +356,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 
 <header>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 20px 6px;border-bottom:1px solid rgba(255,184,0,0.12);">
-    <a href="https://lobstargames.win" style="color:var(--text-dim);text-decoration:none;font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;border:1px solid rgba(255,184,0,0.3);padding:7px 16px;border-radius:3px;background:rgba(255,184,0,0.04);">← HOME</a>
+    <button onclick="safeGoHome()" style="color:var(--text-dim);background:rgba(255,184,0,0.04);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:3px;border:1px solid rgba(255,184,0,0.3);padding:7px 16px;border-radius:3px;cursor:pointer;">← HOME</button>
     <div style="text-align:center;">
       <div class="logo" style="font-size:clamp(26px,4vw,44px);line-height:1;">L★BSTAR</div>
       <div class="logo-sub" style="font-size:11px;letter-spacing:8px;margin-top:-2px;">GAMES</div>
@@ -1283,23 +1283,24 @@ async function openRaceLobby() {
 
 // Check if this player is already in a waiting/playing race
 async function getMyActiveRace() {
+  if (!playerName) return null;
   try {
+    // Get all race_hands for this player
     const r = await fetch(
-      `${SUPA_URL}/rest/v1/race_hands?handle=eq.${encodeURIComponent(playerName)}&select=race_id,status`,
+      `${SUPA_URL}/rest/v1/race_hands?handle=eq.${encodeURIComponent(playerName)}&select=race_id`,
       {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
     );
     const hands = await r.json();
-    if (!hands.length) return null;
-    // Check if any of these races are still active
-    for (const h of hands) {
+    if (!hands || !hands.length) return null;
+    const raceIds = hands.map(h=>h.race_id);
+    // Find any active race among them
+    for (const raceId of raceIds) {
       const rr = await fetch(
-        `${SUPA_URL}/rest/v1/races?id=eq.${h.race_id}&select=id,status`,
+        `${SUPA_URL}/rest/v1/races?id=eq.${raceId}&status=in.(waiting,playing)&select=id,status,bet,max_players`,
         {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
       );
       const races = await rr.json();
-      if (races.length && (races[0].status==='waiting'||races[0].status==='playing')) {
-        return races[0];
-      }
+      if (races && races.length) return races[0];
     }
   } catch(e) {}
   return null;
@@ -1689,6 +1690,49 @@ function buildRaceDeck() {
 
 // playerStand race hook handled inside playerStand() directly
 
+
+// ── SESSION EXIT PROTECTION ──
+function safeGoHome() {
+  const inGame = gameState === 'playing';
+  const inRace = typeof raceState !== 'undefined' && (raceState === 'playing' || raceState === 'waiting');
+  if (inGame || inRace) {
+    const msg = inRace
+      ? 'You are in an active RACE! Leaving will forfeit your bet.\n\nAre you sure you want to leave?'
+      : 'You have an active hand in progress!\n\nAre you sure you want to leave?';
+    if (!confirm(msg)) return;
+    // Clean up race if needed
+    if (inRace && typeof leaveRace === 'function') leaveRace();
+  }
+  window.location.href = 'https://lobstargames.win';
+}
+
+// Warn on browser back / tab close / refresh
+window.addEventListener('beforeunload', function(e) {
+  const inGame = gameState === 'playing';
+  const inRace = typeof raceState !== 'undefined' && (raceState === 'playing' || raceState === 'waiting');
+  if (inGame || inRace) {
+    const msg = 'You have an active session! Your progress may be lost.';
+    e.preventDefault();
+    e.returnValue = msg;
+    return msg;
+  }
+});
+
+// Warn on browser back button
+window.addEventListener('popstate', function(e) {
+  const inGame = gameState === 'playing';
+  const inRace = typeof raceState !== 'undefined' && (raceState === 'playing' || raceState === 'waiting');
+  if (inGame || inRace) {
+    const stay = !confirm('Leave game? Active session will be lost.');
+    if (stay) {
+      history.pushState(null, '', window.location.href);
+    }
+  }
+});
+
+// Push state so popstate fires on back button
+history.pushState(null, '', window.location.href);
+
 // ── SHARE SCORE ──
 function shareScore() {
   const txt=encodeURIComponent('🦞 Just played @LobstarGames!\n\n🏆 Points: '+totalPoints.toLocaleString()+'\n✓ Wins: '+wins+' | ✗ Losses: '+losses+'\n🔥 Burned: '+fmtN(totalBurned)+' $LOBSTARGAMES\n\nEvery loss burns supply forever.\nPlay now 👇\nlobstargames.win/game');
@@ -1781,7 +1825,10 @@ renderLB();
 <!-- RACE LOBBY OVERLAY -->
 <div class="race-overlay" id="raceOverlay">
   <div class="race-lobby">
-    <div class="race-lobby-title">⚔️ RACE MODE</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+      <div class="race-lobby-title" style="margin:0">⚔️ RACE MODE</div>
+      <button onclick="closeRaceLobby()" style="background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:18px;width:34px;height:34px;border-radius:3px;cursor:pointer;line-height:1;">✕</button>
+    </div>
     <div class="race-lobby-sub">Same dealer. First to beat the house wins everyone's bet.</div>
 
     <div class="race-tabs">
@@ -1821,8 +1868,8 @@ renderLB();
       </div>
     </div>
 
-    <div style="margin-top:14px;text-align:center;">
-      <button onclick="closeRaceLobby()" style="background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:2px;padding:8px 24px;border-radius:3px;cursor:pointer;">CLOSE</button>
+    <div style="margin-top:14px;display:flex;gap:8px;justify-content:center;">
+      <button onclick="closeRaceLobby()" style="background:rgba(255,184,0,0.06);color:var(--gold);border:1px solid rgba(255,184,0,0.3);font-family:'Bebas Neue',sans-serif;font-size:14px;letter-spacing:2px;padding:10px 28px;border-radius:3px;cursor:pointer;">← BACK TO GAME</button>
     </div>
   </div>
 </div>
@@ -1838,7 +1885,7 @@ renderLB();
         BET: <span style="color:var(--gold)" id="raceWaitBet">—</span> &bull; MAX: <span id="raceWaitMax">4</span> PLAYERS
       </div>
       <button class="race-start-btn" id="raceStartBtn" onclick="startRace()" disabled>▶ START RACE</button><br>
-      <button class="race-leave-btn" onclick="leaveRace()">LEAVE RACE</button>
+      <button class="race-leave-btn" onclick="leaveRace()">← BACK TO GAME (LEAVE RACE)</button>
     </div>
   </div>
 </div>
