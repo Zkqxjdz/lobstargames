@@ -1,7 +1,7 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.5.4
+ Version : v1.5.5
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
@@ -2358,21 +2358,38 @@ async function resolveRace() {
     tlog('info',`DEALER: ${hStr(dealerHand)} = ${ds}`);
     const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,score,status,cards`,
       {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
-    const players = await pr.json();
+    const allPlayers = await pr.json();
+    // Filter out DEALER_BOT — it's a display entry, not a real player
+    const players = allPlayers.filter(p => p.handle !== '🤖 DEALER_BOT' && p.handle !== 'DEALER_BOT');
     const results = players.map(p => {
-      let result,payout=0;
-      if(p.status==='bust'){result='bust';}
-      else if(p.status==='blackjack'&&ds!==21){result='blackjack';}
-      else if(ds>21||(p.score>ds)){result='win';}
-      else if(p.score===ds){result='push';payout=raceBet;}
-      else{result='lose';}
-      return{...p,result,payout};
+      let result, payout = 0;
+      // A player busted if status='bust' OR their score is over 21 OR score is 0/null (didn't submit = auto-bust)
+      const playerBust = p.status === 'bust' || (p.score && p.score > 21) || (!p.score && p.status !== 'blackjack' && p.status !== 'done');
+      const playerScore = p.score || 0;
+      if (playerBust) {
+        result = 'bust'; // Player busted — always loses, even if dealer also busts
+      } else if (p.status === 'blackjack' && ds !== 21) {
+        result = 'blackjack';
+      } else if (ds > 21) {
+        result = 'win'; // Dealer busted, player did not bust → player wins
+      } else if (playerScore > ds) {
+        result = 'win';
+      } else if (playerScore === ds) {
+        result = 'push'; payout = raceBet;
+      } else {
+        result = 'lose';
+      }
+      return { ...p, result, payout, score: playerBust ? null : playerScore };
     });
-    const winners=results.filter(p=>p.result==='win'||p.result==='blackjack');
-    const totalPot=raceBet*players.length;
-    if(winners.length>0){
-      const share=Math.floor(totalPot/winners.length);
-      results.forEach(p=>{if(p.result==='win'||p.result==='blackjack')p.payout=share;else if(p.result==='push')p.payout=raceBet;else p.payout=0;});
+    const winners = results.filter(p => p.result === 'win' || p.result === 'blackjack');
+    const totalPot = raceBet * players.length;
+    if (winners.length > 0) {
+      const share = Math.floor(totalPot / winners.length);
+      results.forEach(p => {
+        if (p.result === 'win' || p.result === 'blackjack') p.payout = share;
+        else if (p.result === 'push') p.payout = raceBet;
+        else p.payout = 0;
+      });
     }
     const me=results.find(p=>p.handle===playerName);
     if(me){
@@ -2407,7 +2424,14 @@ function showRaceResults(results,dealerScore,totalPot,winnerCount,raceBet) {
     const row=document.createElement('div');
     row.className='race-result-row '+(isWin?'winner':isPush?'push':'loser');
     const medal=i===0?'🥇':i===1?'🥈':i===2?'🥉':'';
-    row.innerHTML=`<div class="rrname" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${medal}${isMe?'★ ':''}${p.handle}</div><div class="rrscore">Score: ${p.score||'BUST'}</div><div class="rrpayout" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">${p.payout?'+'+p.payout.toLocaleString():'-'+raceBet.toLocaleString()}</div>`;
+    row.innerHTML = `
+      <div class="rrname" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">
+        ${medal}${isMe?'★ ':''}${p.handle}
+      </div>
+      <div class="rrscore">Score: ${p.score !== null && p.score > 0 ? p.score : 'BUST'}</div>
+      <div class="rrpayout" style="color:${isWin?'var(--green)':isPush?'var(--gold)':'var(--red-glow)'}">
+        ${isWin ? '+'+p.payout.toLocaleString() : isPush ? '±0' : '-'+raceBet.toLocaleString()}
+      </div>`;
     list.appendChild(row);
   });
   document.getElementById('raceResultsOverlay').classList.add('show'); document.getElementById('raceResultsOverlay').style.display='flex';
