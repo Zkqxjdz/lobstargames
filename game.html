@@ -1,10 +1,33 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.1.0
+ Version : v1.4.0
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
+ v1.4.0 — 2026-02-28
+   + Cards 58×84 → 74×108px (+28% bigger), font 15→19px
+   + Score badge font 17→22px
+   + Table shape: rectangle → casino oval/circle with wood rail
+   + Felt watermarks: "BLACKJACK PAYS 3 TO 2" + "DEALER MUST STAND ON 17"
+   + Split fixed: hand 0 stand → hand 1, hand 1 stand → dealer
+   + endHand split routing corrected
+   + Deck: 1 deck → 2-deck shoe with cut card
+   + Dealer now hits soft 17 (more busts, better for player)
+ v1.3.0 — 2026-02-28
+   + Lobby timer reduced 60s → 45s
+   + Inactivity system: 15s idle = warning banner flashes
+   + 25s idle = auto-stand, turn passes to next player
+   + resetInactivityTimer() called on every hit/double action
+   + Warning cleared on stand/race end
+ v1.2.0 — 2026-02-28
+   + Full casino D-shape table redesign (wood rail + green felt)
+   + "LOBSTAR CASINO" watermark on felt
+   + buildTableSeats() — shared fn for both waiting room and live race
+   + Chip-style seat markers (red for others, gold for you)
+   + Cards laid flat on felt surface per player
+   + Live race bar also shows proper casino table
+   + Seats arc-positioned using trig across 200-340deg
  v1.1.0 — 2026-02-28
    + Round table layout — players positioned around oval arc
    + Cards visible for ALL players in race bar (fixed poll query)
@@ -110,27 +133,39 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .lbbr{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--red-glow);}
 
 /* TABLE */
-.bjtable{background:radial-gradient(ellipse at 50% 30%,rgba(0,80,20,0.35),transparent 70%),var(--panel);border:2px solid rgba(255,184,0,0.2);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px;position:relative;}
+.bjtable{
+  position:relative;
+  background:radial-gradient(ellipse 80% 70% at 50% 40%,#1a4a1a 0%,#0f3010 45%,#071509 100%);
+  border-radius:50% / 40%;
+  border:12px solid #3d1f00;
+  box-shadow:0 0 0 2px #2a1400,0 8px 40px rgba(0,0,0,0.9),inset 0 0 80px rgba(0,0,0,0.4);
+  padding:28px 40px 20px;
+  display:flex;flex-direction:column;gap:10px;
+  min-height:380px;
+  overflow:hidden;
+}
+.bjtable::before{content:'BLACKJACK PAYS 3 TO 2';position:absolute;top:44%;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:5px;color:rgba(255,255,255,0.07);white-space:nowrap;pointer-events:none;}
+.bjtable::after{content:'DEALER MUST STAND ON 17';position:absolute;top:52%;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:4px;color:rgba(255,255,255,0.05);white-space:nowrap;pointer-events:none;}
 
 /* SPLIT LAYOUT */
 .hands-area{display:flex;gap:10px;align-items:flex-start;}
 .hand-col{flex:1;text-align:center;}
 .hand-col.active-hand{background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.25);border-radius:4px;padding:6px;}
 .hand-col.inactive-hand{opacity:0.55;filter:grayscale(30%);}
-.hand-label{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--text-dim);margin-bottom:6px;}
+.hand-label{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:3px;color:var(--text-dim);margin-bottom:8px;}
 .hand-label.active{color:var(--gold);}
-.cards-row{display:flex;justify-content:center;gap:6px;flex-wrap:wrap;min-height:88px;align-items:center;}
+.cards-row{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;min-height:112px;align-items:center;}
 .split-vs{font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--text-dim);padding-top:40px;flex-shrink:0;}
 
 /* CARD */
-.card{width:58px;height:84px;border-radius:5px;background:#fff;border:2px solid #ccc;display:flex;flex-direction:column;justify-content:space-between;padding:3px 4px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:15px;box-shadow:0 4px 12px rgba(0,0,0,0.6),0 0 0 1px rgba(255,255,255,0.08);animation:cdeal .3s ease;position:relative;overflow:hidden;flex-shrink:0;}
+.card{width:74px;height:108px;border-radius:7px;background:#fff;border:2px solid #ccc;display:flex;flex-direction:column;justify-content:space-between;padding:4px 5px;font-family:'Rajdhani',sans-serif;font-weight:700;font-size:19px;box-shadow:0 4px 14px rgba(0,0,0,0.7),0 0 0 1px rgba(255,255,255,0.08);animation:cdeal .3s ease;position:relative;overflow:hidden;flex-shrink:0;}
 @keyframes cdeal{from{transform:translateY(-28px) scale(0.82);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
 .card.red{color:#cc0000;}.card.black{color:#111;}
 .card.facedown{background:linear-gradient(135deg,#1a0a00 25%,#2d1500 50%,#1a0a00 75%);border-color:var(--gold);}
-.card.facedown::after{content:'★';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:26px;color:rgba(255,184,0,0.3);}
-.ct{line-height:1;}.cc{font-size:22px;text-align:center;line-height:1;}.cb{line-height:1;transform:rotate(180deg);}
+.card.facedown::after{content:'★';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;color:rgba(255,184,0,0.3);}
+.ct{line-height:1;}.cc{font-size:28px;text-align:center;line-height:1;}.cb{line-height:1;transform:rotate(180deg);}
 
-.sbadge{display:inline-block;background:rgba(0,0,0,0.75);border:1px solid rgba(255,184,0,0.35);border-radius:20px;padding:2px 11px;font-family:'Bebas Neue',sans-serif;font-size:17px;color:var(--gold);margin-top:5px;min-width:44px;text-align:center;}
+.sbadge{display:inline-block;background:rgba(0,0,0,0.75);border:1px solid rgba(255,184,0,0.35);border-radius:20px;padding:3px 14px;font-family:'Bebas Neue',sans-serif;font-size:22px;color:var(--gold);margin-top:6px;min-width:50px;text-align:center;}
 .sbadge.bust{color:var(--red-glow);border-color:var(--red-glow);}
 .sbadge.bj{color:var(--green);border-color:var(--green);}
 .sbadge.won{color:var(--green);border-color:var(--green);}
@@ -351,6 +386,8 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 /* RACE GAME - live race bar at top */
 .race-bar{background:rgba(0,0,0,0.8);border:1px solid rgba(255,184,0,0.2);border-radius:4px;padding:10px 14px;margin-bottom:10px;display:none;}
 .race-bar.show{display:block;}
+.race-inactivity-warn{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(255,60,0,0.95);color:#fff;font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:3px;padding:10px 28px;border-radius:6px;z-index:99999;display:none;box-shadow:0 0 20px rgba(255,60,0,0.5);animation:npulse 0.6s ease infinite;}
+.race-inactivity-warn.show{display:block;}
 .race-bar-title{font-family:'Bebas Neue',sans-serif;font-size:12px;letter-spacing:3px;color:var(--gold);margin-bottom:8px;text-align:center;}
 .race-players-live{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;}
 .race-player-live{background:rgba(255,184,0,0.04);border:1px solid rgba(255,184,0,0.12);border-radius:3px;padding:6px 10px;text-align:center;min-width:100px;}
@@ -377,17 +414,43 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-play-again-btn{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:2px solid #ff7700;font-family:'Bebas Neue',sans-serif;font-size:20px;letter-spacing:3px;padding:13px 40px;border-radius:4px;cursor:pointer;margin-right:8px;}
 .race-close-btn{background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:12px 24px;border-radius:3px;cursor:pointer;}
 
-/* ── RACE TABLE LAYOUT ── */
-.race-table-wrap{position:relative;width:100%;height:340px;margin-bottom:8px;}
-.race-table-felt{position:absolute;left:2%;right:2%;top:0;bottom:55px;background:radial-gradient(ellipse 85% 80% at 50% 45%,#0d1a0d 0%,#060f06 50%,#020802 100%);border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:4px solid #1a3a1a;box-shadow:0 0 0 1px #0f2a0f,0 0 40px rgba(0,0,0,0.9),inset 0 0 80px rgba(0,0,0,0.7);}
-.race-felt-inner{position:absolute;left:8%;right:8%;top:15px;bottom:70px;border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:2px solid rgba(255,255,255,0.04);}
-.race-dealer-spot{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:3;}
-.race-dealer-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#cc5500,#6b2200);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px rgba(255,100,0,0.5);}
-.race-dealer-label{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--gold);letter-spacing:2px;}
-.race-dealer-cards{display:flex;gap:3px;margin-top:2px;min-height:20px;}
-.race-seats-row{position:relative;width:100%;height:100%;}
-.race-seat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:calc(100%/6 - 4px);max-width:70px;z-index:3;}
-.race-seat-cards{display:flex;gap:2px;min-height:30px;align-items:center;margin-bottom:2px;}
+/* ── RACE TABLE LAYOUT — Casino D-shape ── */
+.race-table-wrap{position:relative;width:100%;height:300px;margin-bottom:8px;}
+/* Outer wood rail */
+.race-table-felt{position:absolute;left:0;right:0;top:0;height:230px;background:linear-gradient(180deg,#0e2010 0%,#0b1a0d 40%,#071209 100%);border-radius:54% 54% 0 0 / 70% 70% 0 0;border:10px solid #3d1f00;box-shadow:0 0 0 2px #2a1400,0 8px 32px rgba(0,0,0,0.9),inset 0 0 60px rgba(0,0,0,0.5);}
+/* Green felt texture */
+.race-felt-inner{position:absolute;left:6%;right:6%;top:8px;height:205px;border-radius:50% 50% 0 0/60% 60% 0 0;background:radial-gradient(ellipse 80% 90% at 50% 30%,#1a4a1a 0%,#0f3010 50%,#081808 100%);border:2px solid rgba(255,255,255,0.05);}
+/* Felt logo text */
+.race-felt-logo{position:absolute;top:28%;left:50%;transform:translateX(-50%);font-family:'Bebas Neue',sans-serif;font-size:13px;letter-spacing:8px;color:rgba(255,255,255,0.06);white-space:nowrap;user-select:none;}
+/* Bottom straight edge - table rail */
+.race-table-rail{position:absolute;left:0;right:0;top:220px;height:18px;background:linear-gradient(180deg,#3d1f00,#2a1400);box-shadow:0 4px 10px rgba(0,0,0,0.8);}
+/* Dealer zone at top center of felt */
+.race-dealer-spot{position:absolute;top:10px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:2px;z-index:5;}
+.race-dealer-avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1a1a1a,#0a0a0a);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:15px;box-shadow:0 0 10px rgba(255,184,0,0.4);}
+.race-dealer-label{font-family:'Bebas Neue',sans-serif;font-size:9px;color:var(--gold);letter-spacing:3px;}
+.race-dealer-cards{display:flex;gap:2px;margin-top:3px;}
+/* Player spots row along bottom arc */
+.race-seats-row{position:absolute;left:0;right:0;top:130px;height:155px;}
+/* Individual seat - positioned absolutely by JS */
+.race-seat{position:absolute;display:flex;flex-direction:column;align-items:center;gap:1px;z-index:5;}
+/* Cards laid flat on felt at each spot */
+.race-seat-cards{display:flex;gap:2px;margin-bottom:3px;}
+.race-seat-spot{width:52px;height:34px;border-radius:4px;border:1px dashed rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:3px;}
+/* Chip / avatar circle */
+.race-seat-chip{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;font-weight:bold;border:2px solid rgba(255,255,255,0.15);background:rgba(30,30,30,0.8);color:rgba(255,255,255,0.3);box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);}
+.race-seat-chip.filled{background:linear-gradient(135deg,#8b0000,#4a0000);border-color:rgba(255,100,100,0.5);color:#fff;box-shadow:0 0 8px rgba(200,0,0,0.3);}
+.race-seat-chip.me{background:linear-gradient(135deg,#b8860b,#8b6914);border-color:var(--gold);color:#fff;box-shadow:0 0 12px rgba(255,184,0,0.5);}
+.race-seat-chip.playing{animation:npulse 1.2s ease infinite;}
+.race-seat-chip.done{background:linear-gradient(135deg,#006633,#004422)!important;border-color:#00ff88!important;box-shadow:0 0 10px rgba(0,255,136,0.4)!important;}
+.race-seat-chip.bust{background:linear-gradient(135deg,#660000,#440000)!important;border-color:rgba(255,50,50,0.6)!important;}
+.race-seat-name{font-family:'Bebas Neue',sans-serif;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.5);text-align:center;max-width:56px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.race-seat-name.me-name{color:var(--gold);}
+.race-seat-score{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.5);background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px;margin-top:1px;}
+/* Cards on felt */
+.race-mini-card{width:20px;height:30px;background:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 2px 4px rgba(0,0,0,0.7);}
+.race-mini-card.red{color:#cc0000;}
+.race-mini-card.black{color:#111;}
+.race-mini-card.facedown{background:linear-gradient(135deg,#1a3a1a,#0f2a0f);border-color:rgba(0,180,0,0.4);}
 .race-mini-card{width:18px;height:28px;background:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 1px 3px rgba(0,0,0,0.5);}
 .race-mini-card.red{color:#cc0000;}
 .race-mini-card.black{color:#111;}
@@ -722,11 +785,12 @@ function advanceHand() {
   if (isSplit && activeHand === 0) {
     activeHand = 1;
     highlightActiveHand();
-    const t = total(hands[1]);
     const h1BJ = isBJ(hands[1]);
     setBtns(false, !h1BJ, !h1BJ, false, false);
-    if (h1BJ) { tlog('bj','Hand 2: BLACKJACK!'); setTimeout(() => { revealDealer(); runDealer(); }, 500); }
+    tlog('info', `Hand 2: ${hStr(hands[1])} (${total(hands[1])})`);
+    if (h1BJ) { tlog('bj','Hand 2: BLACKJACK!'); handResults[1]='blackjack'; setTimeout(() => { revealDealer(); runDealer(); }, 500); }
   } else {
+    // Both hands done
     setBtns(false, false, false, false, false);
     revealDealer();
     runDealer();
@@ -782,10 +846,20 @@ function revealDealer() {
   renderDealerHand(false);
   setSB('dealerScore', total(dealerHand));
 }
+function isSoft17(hand) {
+  // Soft 17: has Ace counted as 11 and total is exactly 17
+  const hasAce = hand.some(c=>c.r==='A');
+  if (!hasAce) return false;
+  const hardTotal = hand.reduce((s,c)=>s+Math.min(cv(c),10),0);
+  return hardTotal <= 7 && total(hand) === 17; // Ace counted as 11
+}
+
 function runDealer() {
   let ds = total(dealerHand);
   const step = () => {
-    if (ds < 17) {
+    // Dealer hits on soft 17 (more busts, better for player)
+    const mustHit = ds < 17 || isSoft17(dealerHand);
+    if (mustHit) {
       dealerHand.push(draw());
       renderDealerHand(false);
       ds = total(dealerHand);
@@ -828,9 +902,17 @@ function resolveAllHands(ds) {
 // ── END SINGLE HAND (bust/bj early) ──
 function endHand(outcome, handIdx, ds) {
   handResults[handIdx] = outcome;
-  if (isSplit && handIdx === 0 && outcome === 'bust') {
-    // continue to hand 2
-    advanceHand();
+  if (isSplit) {
+    if (handIdx === 0) {
+      // Hand 0 done (bust/bj/stand) — move to hand 1
+      if (outcome === 'bust') tlog('warn', `Hand 1: BUST!`);
+      advanceHand();
+    } else {
+      // Hand 1 done — run dealer
+      if (outcome === 'bust') tlog('warn', `Hand 2: BUST!`);
+      revealDealer();
+      runDealer();
+    }
     return;
   }
   if (!isSplit) finishGame();
@@ -1486,7 +1568,10 @@ async function joinRaceAsPlayer(raceId) {
 }
 
 let autoStartTimer = null;
-let autoStartSecs = 60;
+let inactivityTimer = null;   // warns at 15s, auto-stands at 25s
+let inactivitySecs = 0;
+let lastPlayerAction = 0;     // timestamp of last hit/stand/double
+let autoStartSecs = 45;
 
 function openWaitingRoom(raceId, bet, maxPlayers) {
   currentRaceId = raceId;
@@ -1501,7 +1586,7 @@ function openWaitingRoom(raceId, bet, maxPlayers) {
 
 function startAutoStartTimer(raceId) {
   clearInterval(autoStartTimer);
-  autoStartSecs = 60;
+  autoStartSecs = 45;
   autoStartTimer = setInterval(async () => {
     autoStartSecs--;
     const el = document.getElementById('raceAutoTimer');
@@ -1554,53 +1639,67 @@ function cardMiniHtml(card) {
   return `<div class="race-mini-card ${isRed?'red':'black'}">${card.r}${card.s}</div>`;
 }
 
-function updateWaitingRoomUI(players, race) {
-  const grid = document.getElementById('racePlayersGrid');
-  // Position seats around the oval - use table wrap dimensions
-  const wrap = document.getElementById('raceTableWrap');
-  const W = wrap ? wrap.offsetWidth : 360;
-  const H = 285; // table felt height
-  const cx = W/2, cy = H*0.42;
-  const rx = W*0.4, ry = H*0.32;
-  // Clear and rebuild
-  // Remove old seats, keep felt/dealer elements
+function buildTableSeats(containerId, players, race, isLiveRace) {
+  const grid = document.getElementById(containerId);
   const existingSeats = grid.querySelectorAll('.race-seat');
   existingSeats.forEach(s=>s.remove());
-  for (let i=0; i<6; i++) {
+  const wrap = grid.closest('.race-table-wrap') || grid.parentElement;
+  const W = wrap.offsetWidth || 380;
+  // 6 seats spread across a bottom arc
+  const seatCount = 6;
+  const cx = W / 2;
+  const ry = 58; // vertical radius of arc
+  const rx = W * 0.44; // horizontal radius
+  const baseY = 12; // top offset inside seats-row div
+  for (let i=0; i<seatCount; i++) {
     const p = players[i];
     const isMe = p && p.handle === playerName;
-    const angle = (Math.PI / 5) * i + Math.PI; // spread across bottom arc
-    const x = cx + rx * Math.cos(angle);
-    const y = cy - ry * Math.sin(angle);
+    const isDone = p && ['done','blackjack'].includes(p.status);
+    const isBust = p && p.status === 'bust';
+    // Spread evenly: angle from 200deg to 340deg (bottom arc)
+    const angleDeg = 200 + (140 / (seatCount-1)) * i;
+    const angleRad = angleDeg * Math.PI / 180;
+    const x = cx + rx * Math.cos(angleRad);
+    const y = baseY + ry + ry * Math.sin(Math.abs(angleRad - Math.PI)) * 0.6;
     const seat = document.createElement('div');
     seat.className = 'race-seat';
-    seat.style.cssText = `position:absolute;left:${x-28}px;top:${y}px;width:56px;min-width:0;z-index:3;`;
-    let cardsHtml='';
-    if (p && p.cards) { try { const c=JSON.parse(p.cards); if(c.length) cardsHtml=`<div class="race-seat-cards">${c.map(cd=>cardMiniHtml(cd)).join('')}</div>`; }catch(e){} }
-    if (p) {
-      seat.innerHTML=`${cardsHtml}<div class="race-seat-avatar ${isMe?'me':'filled'}">${isMe?'★':i+1}</div><div class="race-seat-name ${isMe?'me-name':''}">${isMe?'YOU':p.handle.substring(0,7)}</div><div class="race-seat-score">${race.bet?.toLocaleString()||'?'}🪙</div>`;
-    } else {
-      seat.innerHTML=`<div class="race-seat-avatar empty">${i+1}</div><div class="race-seat-name" style="color:rgba(255,255,255,0.15)">OPEN</div>`;
+    seat.style.cssText = `left:${Math.round(x-26)}px;top:${Math.round(y)}px;`;
+    // Cards on felt
+    let cardsHtml = '';
+    if (p && p.cards) {
+      try {
+        const cards = JSON.parse(p.cards);
+        if (cards.length) cardsHtml = `<div class="race-seat-cards">${cards.map(c=>cardMiniHtml(c)).join('')}</div>`;
+      } catch(e){}
     }
+    // Chip status class
+    let chipClass = !p ? '' : isMe ? 'me' : isDone ? 'done' : isBust ? 'bust' : 'filled';
+    if (isLiveRace && p && !isDone && !isBust) chipClass += ' playing';
+    const chipLabel = p ? (isMe ? '★' : i+1) : (i+1);
+    const nameLabel = p ? (isMe ? 'YOU' : p.handle.substring(0,7)) : 'OPEN';
+    const nameClass = isMe ? 'me-name' : (!p ? 'style="color:rgba(255,255,255,0.15)"' : '');
+    const scoreHtml = p && isLiveRace
+      ? `<div class="race-seat-score" style="color:${isDone?'#00ff88':isBust?'#ff4444':'var(--gold)'}">${p.score||'?'}${isDone?' ✓':isBust?' ✗':''}</div>`
+      : (p ? `<div class="race-seat-score">${race?.bet?.toLocaleString()||'?'}🪙</div>` : '');
+    seat.innerHTML = `${cardsHtml}<div class="race-seat-chip ${chipClass}">${chipLabel}</div><div class="race-seat-name ${isMe?'me-name':''}" ${!p?'style="color:rgba(255,255,255,0.15)"':''}>${nameLabel}</div>${scoreHtml}`;
     grid.appendChild(seat);
   }
-  // Start button logic: only host can start, requires 6 OR timer expired
+}
+
+function updateWaitingRoomUI(players, race) {
+  buildTableSeats('racePlayersGrid', players, race, false);
   const startBtn = document.getElementById('raceStartBtn');
   const realCount = players.filter(p=>!p.handle.includes('DEALER_BOT')).length;
   if (raceRole==='host') {
     if (realCount >= 6) {
       startBtn.disabled = false;
       startBtn.style.background = 'linear-gradient(180deg,#00aa55,#006633)';
-      startBtn.textContent = '▶ START — TABLE FULL (6/6)';
+      startBtn.textContent = '▶ TABLE FULL — START NOW (6/6)';
       startBtn.onclick = () => startRace();
-    } else if (realCount >= 2) {
-      startBtn.disabled = true;
-      startBtn.style.background = '';
-      startBtn.textContent = `WAITING FOR PLAYERS (${realCount}/6)`;
     } else {
       startBtn.disabled = true;
       startBtn.style.background = '';
-      startBtn.textContent = 'WAITING FOR PLAYERS (1/6)';
+      startBtn.textContent = `WAITING FOR PLAYERS (${realCount}/6)`;
     }
   } else {
     startBtn.textContent = `WAITING (${realCount}/6 PLAYERS)`;
@@ -1653,6 +1752,7 @@ async function beginRacePlaying() {
     const fd=document.createElement('div'); fd.className='card facedown';
     document.getElementById('dealerCards').appendChild(fd);
     setBtns(false,true,true,balance>=currentRaceBet,false);
+    resetInactivityTimer();
     tlog('sys','⚔️ RACE STARTED! Beat the dealer. Winner takes all bets!');
     tlog('info',`Your hand: ${hStr(hands[0])} (${total(hands[0])})`);
     pollRacePlayers();
@@ -1676,34 +1776,39 @@ function pollRacePlayers() {
 }
 
 function updateRaceBar(players) {
-  const el=document.getElementById('racePlayersLive'); el.innerHTML='';
   const realPlayers = players.filter(p => !p.handle.includes('DEALER_BOT'));
-  const total6 = 6;
-  const W = el.offsetWidth || 400;
-  const H = el.offsetHeight || 130;
-  const cx = W/2, cy = H*0.42;
-  const rx = W*0.42, ry = H*0.38;
-  for (let i=0; i<total6; i++) {
-    const p = realPlayers[i];
-    const angle = (Math.PI / (total6-1)) * i + Math.PI; // bottom arc left→right
-    const x = cx + rx * Math.cos(angle);
-    const y = cy - ry * Math.sin(angle);
-    const isMe = p && p.handle===playerName;
-    const isDone = p && ['done','blackjack'].includes(p.status);
-    const isBust = p && p.status==='bust';
-    const avatarClass = !p?'empty':isDone?'done':isBust?'bust':'playing';
-    let cardsHtml='';
-    if (p) { try { const cards=JSON.parse(p.cards||'[]'); if(cards.length) cardsHtml=`<div class="race-seat-cards">${cards.map(c=>cardMiniHtml(c)).join('')}</div>`; } catch(e){} }
-    const seat=document.createElement('div');
-    seat.className='race-seat';
-    seat.style.cssText=`position:absolute;left:${x-26}px;top:${y-20}px;width:52px;min-width:0;`;
-    seat.innerHTML=`
-      ${cardsHtml}
-      <div class="race-seat-avatar ${avatarClass} ${isMe?'me':''}" style="width:36px;height:36px;font-size:13px;">${p?(isMe?'★':i+1):(i+1)}</div>
-      <div class="race-seat-name ${isMe?'me-name':''}" style="font-size:8px;">${p?(isMe?'YOU':p.handle.substring(0,6)):'─'}</div>
-      <div class="race-seat-score" style="font-size:8px;color:${isDone?'#00ff88':isBust?'#ff4444':'var(--gold)'};">${p?(p.score||'?'):''}${p?(isDone?'✓':isBust?'✗':''):''}</div>`;
-    el.appendChild(seat);
-  }
+  buildTableSeats('racePlayersLive', realPlayers, null, true);
+}
+
+function resetInactivityTimer() {
+  lastPlayerAction = Date.now();
+  inactivitySecs = 0;
+  clearInterval(inactivityTimer);
+  const warn = document.getElementById('inactivityWarn');
+  if (warn) warn.classList.remove('show');
+  if (raceState !== 'playing' || gameState !== 'playing') return;
+  inactivityTimer = setInterval(async () => {
+    inactivitySecs++;
+    if (inactivitySecs === 15) {
+      // Warn at 15s
+      const warn = document.getElementById('inactivityWarn');
+      if (warn) { warn.classList.add('show'); }
+      tlog('warn', '⚠️ You have been idle! Auto-stand in 10 seconds...');
+    }
+    if (inactivitySecs >= 25) {
+      // Auto-stand at 25s
+      clearInterval(inactivityTimer);
+      const warn = document.getElementById('inactivityWarn');
+      if (warn) warn.classList.remove('show');
+      tlog('warn', '⏱ Timed out — auto-standing.');
+      if (gameState === 'playing' && raceState === 'playing') {
+        await playerStand();
+      }
+    }
+    // Update countdown in warn (only visible after 15s)
+    const cd = document.getElementById('inactivityCountdown');
+    if (cd && inactivitySecs >= 15) cd.textContent = Math.max(0, 25 - inactivitySecs);
+  }, 1000);
 }
 
 async function endRacePlaying() {
@@ -1805,6 +1910,7 @@ function closeRaceResults() {
     el.style.pointerEvents = 'none';
   });
   document.getElementById('raceBar').classList.remove('show');
+  clearInterval(inactivityTimer); document.getElementById('inactivityWarn')?.classList.remove('show');
   raceState='idle'; currentRaceId=null; raceRole=null;
   newHand();
 }
@@ -2087,10 +2193,12 @@ renderLB();
   <div class="race-lobby">
     <div class="race-waiting">
       <div class="race-waiting-title">⏳ WAITING FOR PLAYERS</div>
-      <div class="race-waiting-sub" id="raceWaitSub">Auto-starts when full or in <span id="raceAutoTimer" style="color:var(--gold)">60</span>s</div>
+      <div class="race-waiting-sub" id="raceWaitSub">6 players = instant start &bull; Timer: <span id="raceAutoTimer" style="color:var(--gold)">60</span>s</div>
       <div class="race-table-wrap" id="raceTableWrap">
         <div class="race-table-felt"></div>
         <div class="race-felt-inner"></div>
+        <div class="race-felt-logo">LOBSTAR CASINO</div>
+        <div class="race-table-rail"></div>
         <div class="race-dealer-spot">
           <div class="race-dealer-avatar">🃏</div>
           <div class="race-dealer-label">DEALER</div>
@@ -2110,12 +2218,18 @@ renderLB();
   </div>
 </div>
 
-<!-- RACE LIVE BAR (inside game, above dealer) -->
+<!-- RACE LIVE BAR (inside game) -->
 <div class="race-bar" id="raceBar">
   <div class="race-bar-title">⚔️ RACE IN PROGRESS</div>
-  <div id="raceBarTable" style="position:relative;width:100%;height:130px;">
-    <div style="position:absolute;left:5%;right:5%;top:0;bottom:20px;background:radial-gradient(ellipse 90% 85% at 50% 45%,#0a160a 0%,#040a04 100%);border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:2px solid #1a3a1a;"></div>
-    <div id="racePlayersLive" style="position:absolute;inset:0;"></div>
+  <div class="race-table-wrap" style="height:180px;margin-bottom:0;">
+    <div class="race-table-felt"></div>
+    <div class="race-felt-inner"></div>
+    <div class="race-table-rail"></div>
+    <div class="race-dealer-spot" style="top:6px;">
+      <div class="race-dealer-avatar" style="width:28px;height:28px;font-size:12px;">🃏</div>
+      <div class="race-dealer-label" style="font-size:7px;">DEALER</div>
+    </div>
+    <div class="race-seats-row" id="racePlayersLive" style="top:80px;height:100px;"></div>
   </div>
 </div>
 
@@ -2132,5 +2246,6 @@ renderLB();
   </div>
 </div>
 
+<div class="race-inactivity-warn" id="inactivityWarn">⚠️ ACT NOW! AUTO-STAND IN <span id="inactivityCountdown">10</span>s</div>
 </body>
 </html>
