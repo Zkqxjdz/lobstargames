@@ -1,10 +1,14 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.4.1
+ Version : v1.4.2
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
+ v1.4.2 — 2026-02-28
+   FIX: Duplicate races — cleanMyStaleRaces now deletes ALL waiting races by player on lobby open
+   FIX: Race list deduplicates by host, shows newest only
+   FIX: loadOpenRaces orders by created_at desc
  v1.4.1 — 2026-02-28
    FIX: Game didn't start — joiner now takes over if host inactive after timer
    FIX: Duplicate race — createRace reuses existing open race by same player
@@ -1410,10 +1414,11 @@ async function openRaceLobby() {
   loadOpenRaces();
 }
 
-// Silently remove player from any stale waiting/playing races (always runs)
+// Silently remove player from stale races AND delete duplicate waiting races
 async function cleanMyStaleRaces() {
   if (!playerName) return;
   try {
+    // 1. Remove player from stale race_hands
     const r = await fetch(
       `${SUPA_URL}/rest/v1/race_hands?handle=eq.${encodeURIComponent(playerName)}&select=race_id`,
       {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
@@ -1426,12 +1431,26 @@ async function cleanMyStaleRaces() {
       );
       const races = await rr.json();
       if (races.length) {
-        // Delete from race_hands (leave stale race)
         await fetch(`${SUPA_URL}/rest/v1/race_hands?race_id=eq.${h.race_id}&handle=eq.${encodeURIComponent(playerName)}`, {
-          method:'DELETE',
-          headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+          method:'DELETE', headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
         });
       }
+    }
+    // 2. Delete ALL waiting races created by this player (cleanup duplicates)
+    const dr = await fetch(
+      `${SUPA_URL}/rest/v1/races?created_by=eq.${encodeURIComponent(playerName)}&status=eq.waiting&select=id`,
+      {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}}
+    );
+    const myRaces = await dr.json();
+    for (const race of myRaces) {
+      // Delete hands in this race
+      await fetch(`${SUPA_URL}/rest/v1/race_hands?race_id=eq.${race.id}`, {
+        method:'DELETE', headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      });
+      // Delete the race
+      await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${race.id}`, {
+        method:'DELETE', headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
+      });
     }
   } catch(e) {}
 }
@@ -1487,9 +1506,16 @@ async function loadOpenRaces() {
   const el = document.getElementById('raceList');
   el.innerHTML = '<div class="race-empty">Loading...</div>';
   try {
-    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?status=eq.waiting&select=id,bet,max_players,created_by,created_at`,
+    const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/races?status=eq.waiting&select=id,bet,max_players,created_by,created_at&order=created_at.desc`,
       {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
-    const races = await r.json();
+    let races = await r.json();
+    // Deduplicate: keep only the newest race per host
+    const seen = new Set();
+    races = races.filter(race => {
+      if (seen.has(race.created_by)) return false;
+      seen.add(race.created_by);
+      return true;
+    });
     if (!races.length) { el.innerHTML = '<div class="race-empty">No open races — create one!</div>'; return; }
     el.innerHTML = '';
     for (const race of races) {
