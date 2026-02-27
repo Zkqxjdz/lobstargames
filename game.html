@@ -1,7 +1,7 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.5.3
+ Version : v1.5.4
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
@@ -524,7 +524,7 @@ header::after{
 
 /* NAME */
 .noverlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.97);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
-.nbox{background:linear-gradient(160deg,#141418,#0e0f12);border:2px solid rgba(255,184,0,0.3);border-radius:14px;padding:36px 40px;text-align:center;max-width:480px;width:calc(100%-40px);box-shadow:0 30px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,184,0,0.08);}
+.nbox{background:linear-gradient(160deg,#141418,#0e0f12);border:2px solid rgba(255,184,0,0.3);border-radius:14px;padding:36px 40px;text-align:center;max-width:480px;width:calc(100% - 40px);box-shadow:0 30px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,184,0,0.08);}
 .ntitle{font-family:'Cinzel',serif;font-size:clamp(28px,5vw,42px);font-weight:900;letter-spacing:5px;background:linear-gradient(180deg,#fff8e0,#FFB800 45%,#cc6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,150,0,0.4));margin-bottom:4px;}
 .nsub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:24px;letter-spacing:2px;}
 .ninput{width:100%;background:rgba(255,184,0,0.06);border:1.5px solid rgba(255,184,0,0.25);border-radius:7px;padding:13px 16px;font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--white);outline:none;text-align:center;margin-bottom:14px;letter-spacing:3px;transition:all .2s;}
@@ -765,42 +765,66 @@ header::after{
 
 <!-- NAME OVERLAY -->
 <div class="noverlay" id="nameOverlay">
-  <div class="nbox">
-    <!-- STEP 1: HANDLE -->
-    <div id="nStep1">
-      <div class="ntitle">🦞 LOBSTAR</div>
-      <div class="nsub">ENTER YOUR X HANDLE TO PLAY</div>
-      <input class="ninput" id="nameInput" placeholder="@YourHandle" maxlength="20" autocomplete="off" spellcheck="false">
-      <div id="nInputErr" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff5544;min-height:16px;margin-bottom:8px;"></div>
-      <button class="nenter" onclick="enterGame()">▶  ENTER  ★</button>
+
+  <!-- STEP 1: HANDLE INPUT -->
+  <div class="nbox" id="nStep1">
+    <div style="font-size:52px;margin-bottom:10px;filter:drop-shadow(0 0 20px rgba(255,150,0,0.5));">🦞</div>
+    <div class="ntitle">LOBSTAR</div>
+    <div class="nsub">ENTER YOUR X HANDLE TO PLAY</div>
+    <input class="ninput" id="nameInput" placeholder="@YourHandle" maxlength="20" autocomplete="off" spellcheck="false">
+    <div id="nInputErr" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff5544;min-height:16px;margin-bottom:8px;text-align:center;"></div>
+    <button class="nenter" onclick="enterGame()">▶  ENTER THE CASINO</button>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,184,0,0.2);margin-top:14px;letter-spacing:2px;">NO SIGNUP · NO KYC · PLAY INSTANTLY</div>
+  </div>
+
+  <!-- STEP 2: MODE PICK -->
+  <div class="nbox" id="nStep2" style="display:none;max-width:560px;">
+    <!-- Header -->
+    <div style="margin-bottom:6px;">
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:rgba(255,184,0,0.4);letter-spacing:3px;margin-bottom:6px;">LOGGED IN AS</div>
+      <div id="nWelcome" style="font-family:'Cinzel',serif;font-size:clamp(20px,3vw,28px);font-weight:900;letter-spacing:4px;background:linear-gradient(180deg,#fff8e0,#FFB800);-webkit-background-clip:text;-webkit-text-fill-color:transparent;"></div>
     </div>
+    <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-muted);letter-spacing:3px;margin-bottom:28px;">SELECT GAME MODE</div>
 
-    <!-- STEP 2: MODE PICK -->
-    <div id="nStep2" style="display:none;">
-      <div class="ntitle" id="nWelcome" style="font-size:clamp(18px,3vw,26px);margin-bottom:4px;"></div>
-      <div class="nsub" style="margin-bottom:22px;">CHOOSE YOUR GAME MODE</div>
+    <!-- Two mode cards -->
+    <div class="nmode-grid">
 
-      <div class="nmode-grid">
-        <!-- 1 vs DEALER -->
-        <div class="nmode-card nmode-dealer" onclick="startVsDealer()">
-          <div class="nmode-icon">🃏</div>
-          <div class="nmode-name" style="color:var(--gold);">VS DEALER</div>
-          <div class="nmode-desc">Play solo against<br>the house.<br>Classic blackjack.</div>
-          <div class="ncountdown" id="dealerCountdownLabel" style="display:none;margin-top:8px;">
-            AUTO-START IN <span id="dealerCountdownNum">30</span>s
+      <!-- SOLO vs DEALER -->
+      <div class="nmode-card nmode-dealer" id="nmCardDealer" onclick="startVsDealer()">
+        <div class="nmode-icon">🃏</div>
+        <div class="nmode-name" style="color:var(--gold);">SOLO</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,184,0,0.5);letter-spacing:3px;margin-bottom:10px;">VS DEALER</div>
+        <div class="nmode-desc">Play solo against<br>the house.<br>Classic blackjack.</div>
+        <!-- Countdown ring -->
+        <div id="dealerCountdownLabel" style="display:none;margin-top:14px;">
+          <div style="position:relative;width:54px;height:54px;margin:0 auto;">
+            <svg width="54" height="54" style="transform:rotate(-90deg);">
+              <circle cx="27" cy="27" r="22" fill="none" stroke="rgba(255,184,0,0.1)" stroke-width="4"/>
+              <circle id="cdringSvg" cx="27" cy="27" r="22" fill="none" stroke="var(--gold)" stroke-width="4"
+                stroke-dasharray="138" stroke-dashoffset="0" stroke-linecap="round"
+                style="transition:stroke-dashoffset 1s linear;"/>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;">
+              <span id="dealerCountdownNum" style="font-family:'Cinzel',serif;font-size:16px;font-weight:700;color:var(--gold);">30</span>
+            </div>
           </div>
-        </div>
-        <!-- MULTIPLAYER -->
-        <div class="nmode-card nmode-multi" onclick="startMultiplayer()">
-          <div class="nmode-icon">⚔️</div>
-          <div class="nmode-name" style="color:var(--green);">MULTIPLAYER</div>
-          <div class="nmode-desc">1v1 or up to 6<br>players. First to<br>beat house wins.</div>
+          <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,184,0,0.4);letter-spacing:2px;margin-top:6px;">AUTO-START</div>
         </div>
       </div>
 
-      <button class="nback-btn" onclick="backToHandle()">← CHANGE HANDLE</button>
+      <!-- MULTIPLAYER -->
+      <div class="nmode-card nmode-multi" id="nmCardMulti" onclick="startMultiplayer()">
+        <div class="nmode-icon">⚔️</div>
+        <div class="nmode-name" style="color:var(--green);">MULTI</div>
+        <div style="font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,255,136,0.5);letter-spacing:3px;margin-bottom:10px;">1V1 OR 6 PLAYERS</div>
+        <div class="nmode-desc">Challenge others.<br>Same dealer for all.<br>First to beat house<br>wins everyone's bet.</div>
+        <div style="margin-top:14px;font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(0,255,136,0.35);letter-spacing:2px;">TAP TO JOIN →</div>
+      </div>
+
     </div>
+    <button class="nback-btn" onclick="backToHandle()">← CHANGE HANDLE</button>
   </div>
+
 </div>
 
 <header>
@@ -1593,13 +1617,19 @@ async function enterGame() {
 
   // Start 30s auto-start countdown for vs Dealer
   let secs = 30;
+  const totalSecs = 30;
+  const circumference = 138; // 2*pi*22
   document.getElementById('dealerCountdownLabel').style.display = 'block';
   document.getElementById('dealerCountdownNum').textContent = secs;
+  const ring = document.getElementById('cdringSvg');
+  if (ring) ring.style.strokeDashoffset = '0';
   if (dealerAutoTimer) clearInterval(dealerAutoTimer);
   dealerAutoTimer = setInterval(() => {
     secs--;
-    const el = document.getElementById('dealerCountdownNum');
-    if (el) el.textContent = secs;
+    const numEl = document.getElementById('dealerCountdownNum');
+    if (numEl) numEl.textContent = secs;
+    const ringEl = document.getElementById('cdringSvg');
+    if (ringEl) ringEl.style.strokeDashoffset = String(circumference * (1 - secs/totalSecs));
     if (secs <= 0) {
       clearInterval(dealerAutoTimer);
       dealerAutoTimer = null;
@@ -1631,7 +1661,11 @@ function startMultiplayer() {
 
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
 const savedHandle = localStorage.getItem('lobstar_handle');
-if (savedHandle) document.getElementById('nameInput').value = savedHandle;
+if (savedHandle) {
+  document.getElementById('nameInput').value = savedHandle;
+  // Auto-login returning users: skip step 1, go to step 2 immediately
+  setTimeout(() => enterGame(), 100);
+}
 
 // ── LEADERBOARD ──
 function updateLBPlayer() { renderLB(); saveScore(); }
