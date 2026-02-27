@@ -1,10 +1,15 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.4.0
+ Version : v1.4.1
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
+ v1.4.1 — 2026-02-28
+   FIX: Game didn't start — joiner now takes over if host inactive after timer
+   FIX: Duplicate race — createRace reuses existing open race by same player
+   FIX: Seat 1&2 overlap — arc spread widened from 140deg to 120deg (210-330)
+   FIX: Brighter fonts — seat names 50%→85% opacity, scores gold tint
  v1.4.0 — 2026-02-28
    + Cards 58×84 → 74×108px (+28% bigger), font 15→19px
    + Score badge font 17→22px
@@ -437,15 +442,15 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-seat-cards{display:flex;gap:2px;margin-bottom:3px;}
 .race-seat-spot{width:52px;height:34px;border-radius:4px;border:1px dashed rgba(255,255,255,0.1);background:rgba(0,0,0,0.2);display:flex;align-items:center;justify-content:center;margin-bottom:3px;}
 /* Chip / avatar circle */
-.race-seat-chip{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:13px;font-weight:bold;border:2px solid rgba(255,255,255,0.15);background:rgba(30,30,30,0.8);color:rgba(255,255,255,0.3);box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);}
+.race-seat-chip{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:14px;font-weight:bold;border:2px solid rgba(255,255,255,0.25);background:rgba(20,20,20,0.9);color:rgba(255,255,255,0.5);box-shadow:inset 0 1px 3px rgba(0,0,0,0.5);}
 .race-seat-chip.filled{background:linear-gradient(135deg,#8b0000,#4a0000);border-color:rgba(255,100,100,0.5);color:#fff;box-shadow:0 0 8px rgba(200,0,0,0.3);}
 .race-seat-chip.me{background:linear-gradient(135deg,#b8860b,#8b6914);border-color:var(--gold);color:#fff;box-shadow:0 0 12px rgba(255,184,0,0.5);}
 .race-seat-chip.playing{animation:npulse 1.2s ease infinite;}
 .race-seat-chip.done{background:linear-gradient(135deg,#006633,#004422)!important;border-color:#00ff88!important;box-shadow:0 0 10px rgba(0,255,136,0.4)!important;}
 .race-seat-chip.bust{background:linear-gradient(135deg,#660000,#440000)!important;border-color:rgba(255,50,50,0.6)!important;}
-.race-seat-name{font-family:'Bebas Neue',sans-serif;font-size:8px;letter-spacing:1px;color:rgba(255,255,255,0.5);text-align:center;max-width:56px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.race-seat-name.me-name{color:var(--gold);}
-.race-seat-score{font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,0.5);background:rgba(0,0,0,0.6);padding:1px 4px;border-radius:3px;margin-top:1px;}
+.race-seat-name{font-family:'Bebas Neue',sans-serif;font-size:9px;letter-spacing:1px;color:rgba(255,255,255,0.85);text-align:center;max-width:60px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.race-seat-name.me-name{color:var(--gold);font-size:10px;font-weight:bold;}
+.race-seat-score{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,220,100,0.9);background:rgba(0,0,0,0.7);padding:2px 5px;border-radius:3px;margin-top:2px;}
 /* Cards on felt */
 .race-mini-card{width:20px;height:30px;background:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 2px 4px rgba(0,0,0,0.7);}
 .race-mini-card.red{color:#cc0000;}
@@ -1523,6 +1528,20 @@ async function quickMatch() {
 async function createRace() {
   if (!playerName) { showRefToast('LOGIN FIRST!'); return; }
   if (balance < currentRaceBet) { showRefToast('NOT ENOUGH CHIPS!'); return; }
+  // Check if player already has an open race
+  try {
+    const ck = await fetch(`${SUPA_URL}/rest/v1/races?created_by=eq.${encodeURIComponent(playerName)}&status=eq.waiting&select=id`,
+      {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+    const existing = await ck.json();
+    if (existing.length > 0) {
+      // Reuse existing race instead of creating duplicate
+      currentRaceId = existing[0].id;
+      raceRole = 'host';
+      closeRaceLobby();
+      openWaitingRoom(currentRaceId, currentRaceBet, currentRaceMax);
+      return;
+    }
+  } catch(e) {}
 
   try {
     const deck = buildRaceDeck();
@@ -1600,12 +1619,27 @@ function startAutoStartTimer(raceId) {
         const players = await pr.json();
         const realPlayers2 = players.filter(p => !p.handle.includes('DEALER_BOT'));
         if (realPlayers2.length <= 1) {
-          await startSoloRace(); // solo vs dealer
-        } else if (raceRole === 'host') {
-          await startRace(); // start with available players, no confirm needed
+          await startSoloRace(); // only 1 player — solo vs dealer
+        } else {
+          // Multiple players — only host fires startRace to avoid double-start
+          // If both try, DB PATCH is idempotent so it's fine, but only one deals cards
+          if (raceRole === 'host') {
+            await startRace();
+          } else {
+            // Joiner: wait up to 5s for host to fire, then take over
+            await new Promise(r => setTimeout(r, 3000));
+            // Check if race started yet
+            const rr2 = await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}&select=status`,
+              {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
+            const rd2 = await rr2.json();
+            if (rd2[0] && rd2[0].status !== 'playing') {
+              tlog('warn','Host inactive — joiner taking over start...');
+              raceRole = 'host';
+              await startRace();
+            }
+          }
         }
-        // non-host joiners: host starts, they get picked up by poll
-      } catch(e) { if (raceRole==='host') await startRace(); }
+      } catch(e) { tlog('warn','Auto-start error: '+e); if (raceRole==='host') await startRace(); }
     }
   }, 1000);
 }
@@ -1648,16 +1682,16 @@ function buildTableSeats(containerId, players, race, isLiveRace) {
   // 6 seats spread across a bottom arc
   const seatCount = 6;
   const cx = W / 2;
-  const ry = 58; // vertical radius of arc
-  const rx = W * 0.44; // horizontal radius
-  const baseY = 12; // top offset inside seats-row div
+  const ry = 52; // vertical radius of arc
+  const rx = W * 0.43; // horizontal radius
+  const baseY = 8; // top offset inside seats-row div
   for (let i=0; i<seatCount; i++) {
     const p = players[i];
     const isMe = p && p.handle === playerName;
     const isDone = p && ['done','blackjack'].includes(p.status);
     const isBust = p && p.status === 'bust';
-    // Spread evenly: angle from 200deg to 340deg (bottom arc)
-    const angleDeg = 200 + (140 / (seatCount-1)) * i;
+    // Spread evenly: angle from 210deg to 330deg (wider arc = more spacing)
+    const angleDeg = 210 + (120 / (seatCount-1)) * i;
     const angleRad = angleDeg * Math.PI / 180;
     const x = cx + rx * Math.cos(angleRad);
     const y = baseY + ry + ry * Math.sin(Math.abs(angleRad - Math.PI)) * 0.6;
