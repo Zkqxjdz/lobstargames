@@ -1,7 +1,7 @@
 <!--
 ================================================================
  LOBSTAR GAMES — game.html
- Version : v1.5.2
+ Version : v1.5.3
  Date    : 2026-02-28
 ----------------------------------------------------------------
  CHANGELOG
@@ -523,15 +523,31 @@ header::after{
 .twin-flash{animation:tpulse .8s ease;}
 
 /* NAME */
-.noverlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.75);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(3px);}
-.nbox{background:var(--panel);border:2px solid rgba(255,184,0,0.4);border-radius:6px;padding:30px 38px;text-align:center;max-width:390px;width:90%;box-shadow:0 0 55px rgba(255,120,0,0.3);}
-.ntitle{font-family:'Bebas Neue',sans-serif;font-size:40px;letter-spacing:4px;background:linear-gradient(180deg,#fff5cc,#FFB800,#cc6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:5px;}
-.nsub{font-size:12px;color:var(--text-dim);margin-bottom:18px;letter-spacing:1px;}
-.ninput{width:100%;background:rgba(255,184,0,0.05);border:1px solid rgba(255,184,0,0.3);border-radius:3px;padding:10px 13px;font-family:'Rajdhani',sans-serif;font-size:17px;font-weight:700;color:var(--white);outline:none;text-align:center;margin-bottom:14px;}
-.ninput::placeholder{color:var(--text-dim);}
-.ninput:focus{border-color:var(--gold);box-shadow:0 0 14px rgba(255,184,0,0.2);}
-.nenter{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid #ff7700;width:100%;font-size:17px;font-family:'Bebas Neue',sans-serif;letter-spacing:2px;padding:12px;border-radius:3px;cursor:pointer;}
-.nenter:hover{background:linear-gradient(180deg,#ee6600,#aa3300);}
+.noverlay{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,0.97);display:flex;align-items:center;justify-content:center;backdrop-filter:blur(8px);}
+.nbox{background:linear-gradient(160deg,#141418,#0e0f12);border:2px solid rgba(255,184,0,0.3);border-radius:14px;padding:36px 40px;text-align:center;max-width:480px;width:calc(100%-40px);box-shadow:0 30px 80px rgba(0,0,0,0.9),0 0 0 1px rgba(255,184,0,0.08);}
+.ntitle{font-family:'Cinzel',serif;font-size:clamp(28px,5vw,42px);font-weight:900;letter-spacing:5px;background:linear-gradient(180deg,#fff8e0,#FFB800 45%,#cc6600);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 20px rgba(255,150,0,0.4));margin-bottom:4px;}
+.nsub{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:24px;letter-spacing:2px;}
+.ninput{width:100%;background:rgba(255,184,0,0.06);border:1.5px solid rgba(255,184,0,0.25);border-radius:7px;padding:13px 16px;font-family:'Cinzel',serif;font-size:18px;font-weight:700;color:var(--white);outline:none;text-align:center;margin-bottom:14px;letter-spacing:3px;transition:all .2s;}
+.ninput::placeholder{color:rgba(255,184,0,0.2);font-size:13px;letter-spacing:2px;}
+.ninput:focus{border-color:var(--gold);box-shadow:0 0 20px rgba(255,184,0,0.15);}
+.nenter{background:linear-gradient(180deg,#cc5500,#882200);color:#fff5cc;border:1px solid rgba(255,120,0,0.6);width:100%;font-size:16px;font-family:'Cinzel',serif;font-weight:700;letter-spacing:4px;padding:14px;border-radius:7px;cursor:pointer;box-shadow:0 4px 0 #441100,0 0 20px rgba(200,80,0,0.25);transition:all .2s;}
+.nenter:hover{background:linear-gradient(180deg,#ee6600,#aa3300);transform:translateY(-1px);}
+.nenter:active{transform:translateY(2px);box-shadow:0 1px 0 #441100;}
+/* MODE PICK (step 2) */
+.nmode-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px;}
+.nmode-card{cursor:pointer;border-radius:10px;padding:24px 16px;text-align:center;transition:all .25s;border:2px solid;}
+.nmode-dealer{background:linear-gradient(160deg,rgba(255,184,0,0.07),rgba(255,184,0,0.02));border-color:rgba(255,184,0,0.25);}
+.nmode-dealer:hover{border-color:var(--gold);background:linear-gradient(160deg,rgba(255,184,0,0.15),rgba(255,184,0,0.06));transform:translateY(-3px);box-shadow:0 8px 24px rgba(255,184,0,0.15);}
+.nmode-multi{background:linear-gradient(160deg,rgba(0,200,100,0.07),rgba(0,200,100,0.02));border-color:rgba(0,200,100,0.2);}
+.nmode-multi:hover{border-color:var(--green);background:linear-gradient(160deg,rgba(0,255,136,0.14),rgba(0,200,100,0.05));transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,200,100,0.15);}
+.nmode-icon{font-size:38px;margin-bottom:10px;}
+.nmode-name{font-family:'Cinzel',serif;font-size:17px;font-weight:700;letter-spacing:3px;margin-bottom:8px;}
+.nmode-desc{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text-muted);line-height:1.7;}
+/* 30s countdown */
+.ncountdown{font-family:'Cinzel',serif;font-size:13px;letter-spacing:3px;color:var(--text-muted);margin-top:4px;}
+.ncountdown span{color:var(--gold);font-size:20px;font-weight:700;}
+.nback-btn{background:transparent;color:var(--text-muted);border:none;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;cursor:pointer;padding:8px 20px;transition:color .2s;}
+.nback-btn:hover{color:var(--gold);}
 
 /* MYSTERY BOX */
 .mbox-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;}
@@ -750,10 +766,40 @@ header::after{
 <!-- NAME OVERLAY -->
 <div class="noverlay" id="nameOverlay">
   <div class="nbox">
-    <div class="ntitle">LOBSTAR GAMES</div>
-    <div class="nsub">ENTER YOUR X HANDLE TO PLAY</div>
-    <input class="ninput" id="nameInput" placeholder="YOUR X HANDLE (e.g. @LobstarGames)" maxlength="16" autocomplete="off">
-    <button class="nenter" onclick="enterGame()">ENTER THE GAME ★</button>
+    <!-- STEP 1: HANDLE -->
+    <div id="nStep1">
+      <div class="ntitle">🦞 LOBSTAR</div>
+      <div class="nsub">ENTER YOUR X HANDLE TO PLAY</div>
+      <input class="ninput" id="nameInput" placeholder="@YourHandle" maxlength="20" autocomplete="off" spellcheck="false">
+      <div id="nInputErr" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:#ff5544;min-height:16px;margin-bottom:8px;"></div>
+      <button class="nenter" onclick="enterGame()">▶  ENTER  ★</button>
+    </div>
+
+    <!-- STEP 2: MODE PICK -->
+    <div id="nStep2" style="display:none;">
+      <div class="ntitle" id="nWelcome" style="font-size:clamp(18px,3vw,26px);margin-bottom:4px;"></div>
+      <div class="nsub" style="margin-bottom:22px;">CHOOSE YOUR GAME MODE</div>
+
+      <div class="nmode-grid">
+        <!-- 1 vs DEALER -->
+        <div class="nmode-card nmode-dealer" onclick="startVsDealer()">
+          <div class="nmode-icon">🃏</div>
+          <div class="nmode-name" style="color:var(--gold);">VS DEALER</div>
+          <div class="nmode-desc">Play solo against<br>the house.<br>Classic blackjack.</div>
+          <div class="ncountdown" id="dealerCountdownLabel" style="display:none;margin-top:8px;">
+            AUTO-START IN <span id="dealerCountdownNum">30</span>s
+          </div>
+        </div>
+        <!-- MULTIPLAYER -->
+        <div class="nmode-card nmode-multi" onclick="startMultiplayer()">
+          <div class="nmode-icon">⚔️</div>
+          <div class="nmode-name" style="color:var(--green);">MULTIPLAYER</div>
+          <div class="nmode-desc">1v1 or up to 6<br>players. First to<br>beat house wins.</div>
+        </div>
+      </div>
+
+      <button class="nback-btn" onclick="backToHandle()">← CHANGE HANDLE</button>
+    </div>
   </div>
 </div>
 
@@ -1508,13 +1554,21 @@ function growBotScores() {
 setInterval(() => { fetchRealPlayers(); growBotScores(); }, 30000);
 
 // ── ENTER ──
+let dealerAutoTimer = null;
+
 async function enterGame() {
-  const v = document.getElementById('nameInput').value.trim();
-  if (!v) { document.getElementById('nameInput').focus(); return; }
-  playerName = v.toUpperCase();
+  const raw = document.getElementById('nameInput').value.trim();
+  const errEl = document.getElementById('nInputErr');
+  if (!raw) { document.getElementById('nameInput').focus(); return; }
+  const v = raw.replace(/^@/,'').toUpperCase();
+  if (v.length < 2) { errEl.textContent = 'Handle too short'; return; }
+  errEl.textContent = '';
+
+  playerName = v;
   localStorage.setItem('lobstar_handle', playerName);
-  document.getElementById('nameOverlay').style.display = 'none';
   document.getElementById('walletAddr').textContent = '0x' + Array.from({length:8},()=>Math.floor(Math.random()*16).toString(16)).join('') + '...';
+
+  // Load stats silently
   try {
     const r = await fetch(`${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}&select=pts,burned,wins,losses,games`, {
       headers: {'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}
@@ -1523,22 +1577,58 @@ async function enterGame() {
     if (data && data.length > 0) {
       const s = data[0];
       totalPoints=s.pts||0; totalBurned=s.burned||0; wins=s.wins||0; losses=s.losses||0;
-      tlog('sys', `Welcome back, ${playerName}! Stats restored.`);
-      tlog('info', `Points: ${totalPoints.toLocaleString()} | Wins: ${wins} | Losses: ${losses}`);
     } else {
       await registerReferral(true);
-      tlog('sys', `Welcome, ${playerName}. The house always burns.`);
-      tlog('info', `Wallet: ${START_BAL.toLocaleString()} $LOBSTAR loaded`);
     }
-  } catch(e) {
-    tlog('sys', `Welcome, ${playerName}. The house always burns.`);
-  }
-  tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
+  } catch(e) {}
+
   document.getElementById('raceBtn').style.display = 'block';
-  // Silently clean stale races on login
   setTimeout(() => cleanMyStaleRaces(), 1000);
   renderLB(); fetchRealPlayers(); updateUI(); startTicker(); startBots();
+
+  // Show step 2 — mode pick
+  document.getElementById('nStep1').style.display = 'none';
+  document.getElementById('nStep2').style.display = 'block';
+  document.getElementById('nWelcome').textContent = 'WELCOME, @' + playerName;
+
+  // Start 30s auto-start countdown for vs Dealer
+  let secs = 30;
+  document.getElementById('dealerCountdownLabel').style.display = 'block';
+  document.getElementById('dealerCountdownNum').textContent = secs;
+  if (dealerAutoTimer) clearInterval(dealerAutoTimer);
+  dealerAutoTimer = setInterval(() => {
+    secs--;
+    const el = document.getElementById('dealerCountdownNum');
+    if (el) el.textContent = secs;
+    if (secs <= 0) {
+      clearInterval(dealerAutoTimer);
+      dealerAutoTimer = null;
+      startVsDealer();
+    }
+  }, 1000);
 }
+
+function backToHandle() {
+  if (dealerAutoTimer) { clearInterval(dealerAutoTimer); dealerAutoTimer = null; }
+  document.getElementById('nStep2').style.display = 'none';
+  document.getElementById('nStep1').style.display = 'block';
+}
+
+function startVsDealer() {
+  if (dealerAutoTimer) { clearInterval(dealerAutoTimer); dealerAutoTimer = null; }
+  document.getElementById('nameOverlay').style.display = 'none';
+  tlog('sys', `Welcome, ${playerName}. The house always burns.`);
+  tlog('warn', `Min bet: 100 | SPLIT available | Every loss burns supply`);
+}
+
+function startMultiplayer() {
+  if (dealerAutoTimer) { clearInterval(dealerAutoTimer); dealerAutoTimer = null; }
+  document.getElementById('nameOverlay').style.display = 'none';
+  tlog('sys', `Welcome, ${playerName}. Choose your battle.`);
+  // Open multiplayer lobby
+  openRaceLobby();
+}
+
 document.getElementById('nameInput').addEventListener('keydown', e => { if(e.key==='Enter') enterGame(); });
 const savedHandle = localStorage.getItem('lobstar_handle');
 if (savedHandle) document.getElementById('nameInput').value = savedHandle;
