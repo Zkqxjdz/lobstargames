@@ -1,3 +1,38 @@
+<!--
+================================================================
+ LOBSTAR GAMES — game.html
+ Version : v1.1.0
+ Date    : 2026-02-28
+----------------------------------------------------------------
+ CHANGELOG
+ v1.1.0 — 2026-02-28
+   + Round table layout — players positioned around oval arc
+   + Cards visible for ALL players in race bar (fixed poll query)
+   + 6-seat table always shown, host can only start when full OR timer expires
+   + Auto-start on timer expiry with whoever is present (no confirm)
+   + Leave race mid-game = lose your bet (penalty deducted + saved to DB)
+   + Seat numbers 1-6 positioned around the felt oval
+   + Race bar also uses oval positioning
+ v1.0.0 — 2026-02-28
+   + Race mode with 6-seat black felt table
+   + Auto-start with available players (60s timer)
+   + Casino table layout (dealer top, players bottom arc)
+   + Mini cards visible on table during race
+   + Seat numbers 1-6 (casino style)
+   + Custom bet input (100-10K) with quick-set buttons
+   + Solo vs Dealer mode when 1 player
+   + Staggered Jito bundles (phase 1 create, phase 2 fresh blockhash)
+   + Leave Game button below action row
+   + Home button (gold, visible top-left)
+   + Leave & Go Home from waiting room + results
+   + Auto-cleanup stale races on lobby open
+   + Duplicate race prevention (DB constraint)
+   + Exit warnings on HOME/back/refresh
+   + ESC key closes race overlays
+   + Lobstar brown/orange table theme -> now black felt
+   + X community link updated throughout
+================================================================
+-->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -350,7 +385,7 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-dealer-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#cc5500,#6b2200);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px rgba(255,100,0,0.5);}
 .race-dealer-label{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--gold);letter-spacing:2px;}
 .race-dealer-cards{display:flex;gap:3px;margin-top:2px;min-height:20px;}
-.race-seats-row{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:flex-end;padding:0 4px 0;}
+.race-seats-row{position:relative;width:100%;height:100%;}
 .race-seat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:calc(100%/6 - 4px);max-width:70px;z-index:3;}
 .race-seat-cards{display:flex;gap:2px;min-height:30px;align-items:center;margin-bottom:2px;}
 .race-mini-card{width:18px;height:28px;background:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 1px 3px rgba(0,0,0,0.5);}
@@ -1473,26 +1508,18 @@ function startAutoStartTimer(raceId) {
     if (el) el.textContent = autoStartSecs;
     if (autoStartSecs <= 0) {
       clearInterval(autoStartTimer);
-      // Start with whoever is available, not just when full
-      tlog('warn', '⏱ Auto-starting race...');
-      // Check player count
+      tlog('warn', '⏱ Timer expired — auto-starting with available players...');
       try {
         const pr = await fetch(`${SUPA_URL}/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle`,
           {headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY}});
         const players = await pr.json();
         const realPlayers2 = players.filter(p => !p.handle.includes('DEALER_BOT'));
         if (realPlayers2.length <= 1) {
-          // Solo — race vs system
-          await startSoloRace();
+          await startSoloRace(); // solo vs dealer
         } else if (raceRole === 'host') {
-          await startRace();
-        } else {
-          await fetch(`${SUPA_URL}/rest/v1/races?id=eq.${currentRaceId}`, {
-            method:'PATCH',
-            headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
-            body:JSON.stringify({status:'playing', started_at:new Date().toISOString()})
-          });
+          await startRace(); // start with available players, no confirm needed
         }
+        // non-host joiners: host starts, they get picked up by poll
       } catch(e) { if (raceRole==='host') await startRace(); }
     }
   }, 1000);
@@ -1529,51 +1556,54 @@ function cardMiniHtml(card) {
 
 function updateWaitingRoomUI(players, race) {
   const grid = document.getElementById('racePlayersGrid');
-  grid.innerHTML = '';
-  const emojis = ['🦞','🦀','🐙','🦑','🐡','🦈'];
-  const totalSeats = 6; // always show 6 seats
-  for (let i=0; i<totalSeats; i++) {
+  // Position seats around the oval - use table wrap dimensions
+  const wrap = document.getElementById('raceTableWrap');
+  const W = wrap ? wrap.offsetWidth : 360;
+  const H = 285; // table felt height
+  const cx = W/2, cy = H*0.42;
+  const rx = W*0.4, ry = H*0.32;
+  // Clear and rebuild
+  // Remove old seats, keep felt/dealer elements
+  const existingSeats = grid.querySelectorAll('.race-seat');
+  existingSeats.forEach(s=>s.remove());
+  for (let i=0; i<6; i++) {
     const p = players[i];
     const isMe = p && p.handle === playerName;
+    const angle = (Math.PI / 5) * i + Math.PI; // spread across bottom arc
+    const x = cx + rx * Math.cos(angle);
+    const y = cy - ry * Math.sin(angle);
     const seat = document.createElement('div');
     seat.className = 'race-seat';
-    // Show cards if playing
-    let cardsHtml = '';
-    if (p && p.cards) {
-      try {
-        const cards = JSON.parse(p.cards);
-        if (cards.length) {
-          cardsHtml = `<div class="race-seat-cards">${cards.map(c=>cardMiniHtml(c)).join('')}</div>`;
-        }
-      } catch(e) {}
-    }
+    seat.style.cssText = `position:absolute;left:${x-28}px;top:${y}px;width:56px;min-width:0;z-index:3;`;
+    let cardsHtml='';
+    if (p && p.cards) { try { const c=JSON.parse(p.cards); if(c.length) cardsHtml=`<div class="race-seat-cards">${c.map(cd=>cardMiniHtml(cd)).join('')}</div>`; }catch(e){} }
     if (p) {
-      seat.innerHTML = `
-        ${cardsHtml}
-        <div class="race-seat-avatar ${isMe?'me':'filled'}">${emojis[i%emojis.length]}</div>
-        <div class="race-seat-name ${isMe?'me-name':''}">${isMe?'★ ':''}${p.handle.length>9?p.handle.substring(0,9)+'..':p.handle}</div>
-        <div class="race-seat-score">${race.bet?.toLocaleString()||'?'}🪙</div>`;
+      seat.innerHTML=`${cardsHtml}<div class="race-seat-avatar ${isMe?'me':'filled'}">${isMe?'★':i+1}</div><div class="race-seat-name ${isMe?'me-name':''}">${isMe?'YOU':p.handle.substring(0,7)}</div><div class="race-seat-score">${race.bet?.toLocaleString()||'?'}🪙</div>`;
     } else {
-      seat.innerHTML = `
-        <div class="race-seat-cards"></div>
-        <div class="race-seat-avatar empty">⏳</div>
-        <div class="race-seat-name" style="color:rgba(255,255,255,0.2)">WAITING</div>`;
+      seat.innerHTML=`<div class="race-seat-avatar empty">${i+1}</div><div class="race-seat-name" style="color:rgba(255,255,255,0.15)">OPEN</div>`;
     }
     grid.appendChild(seat);
   }
+  // Start button logic: only host can start, requires 6 OR timer expired
   const startBtn = document.getElementById('raceStartBtn');
+  const realCount = players.filter(p=>!p.handle.includes('DEALER_BOT')).length;
   if (raceRole==='host') {
-    if (players.length >= 2) {
+    if (realCount >= 6) {
       startBtn.disabled = false;
-      startBtn.textContent = '▶ START RACE (' + players.length + ' PLAYERS)';
+      startBtn.style.background = 'linear-gradient(180deg,#00aa55,#006633)';
+      startBtn.textContent = '▶ START — TABLE FULL (6/6)';
       startBtn.onclick = () => startRace();
+    } else if (realCount >= 2) {
+      startBtn.disabled = true;
+      startBtn.style.background = '';
+      startBtn.textContent = `WAITING FOR PLAYERS (${realCount}/6)`;
     } else {
-      startBtn.disabled = false;
-      startBtn.textContent = '⚡ START SOLO VS DEALER';
-      startBtn.onclick = () => startSoloRace();
+      startBtn.disabled = true;
+      startBtn.style.background = '';
+      startBtn.textContent = 'WAITING FOR PLAYERS (1/6)';
     }
   } else {
-    startBtn.textContent = 'WAITING FOR HOST...';
+    startBtn.textContent = `WAITING (${realCount}/6 PLAYERS)`;
     startBtn.disabled = true;
   }
 }
@@ -1635,7 +1665,7 @@ function pollRacePlayers() {
   racePollInterval = setInterval(async () => {
     if (!currentRaceId||raceState==='idle') return;
     try {
-      const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,status,score`,
+      const r = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,status,score,cards`,
         {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
       const players = await r.json();
       updateRaceBar(players);
@@ -1647,28 +1677,33 @@ function pollRacePlayers() {
 
 function updateRaceBar(players) {
   const el=document.getElementById('racePlayersLive'); el.innerHTML='';
-  const emojis = ['🦞','🦀','🐙','🦑','🐡','🦈'];
   const realPlayers = players.filter(p => !p.handle.includes('DEALER_BOT'));
-  realPlayers.forEach((p, i) => {
-    const isMe=p.handle===playerName;
-    const isDone=['done','blackjack'].includes(p.status);
-    const isBust=p.status==='bust';
-    const avatarClass=isDone?'done':isBust?'bust':'playing';
-    // Show mini cards
-    let cardsHtml = '';
-    try {
-      const cards = JSON.parse(p.cards||'[]');
-      if (cards.length) cardsHtml = `<div class="race-seat-cards">${cards.map(c=>cardMiniHtml(c)).join('')}</div>`;
-    } catch(e) {}
+  const total6 = 6;
+  const W = el.offsetWidth || 400;
+  const H = el.offsetHeight || 130;
+  const cx = W/2, cy = H*0.42;
+  const rx = W*0.42, ry = H*0.38;
+  for (let i=0; i<total6; i++) {
+    const p = realPlayers[i];
+    const angle = (Math.PI / (total6-1)) * i + Math.PI; // bottom arc left→right
+    const x = cx + rx * Math.cos(angle);
+    const y = cy - ry * Math.sin(angle);
+    const isMe = p && p.handle===playerName;
+    const isDone = p && ['done','blackjack'].includes(p.status);
+    const isBust = p && p.status==='bust';
+    const avatarClass = !p?'empty':isDone?'done':isBust?'bust':'playing';
+    let cardsHtml='';
+    if (p) { try { const cards=JSON.parse(p.cards||'[]'); if(cards.length) cardsHtml=`<div class="race-seat-cards">${cards.map(c=>cardMiniHtml(c)).join('')}</div>`; } catch(e){} }
     const seat=document.createElement('div');
     seat.className='race-seat';
+    seat.style.cssText=`position:absolute;left:${x-26}px;top:${y-20}px;width:52px;min-width:0;`;
     seat.innerHTML=`
       ${cardsHtml}
-      <div class="race-seat-avatar ${avatarClass} ${isMe?'me':'filled'}">${emojis[i%emojis.length]}</div>
-      <div class="race-seat-name ${isMe?'me-name':''}">${isMe?'★ ':''}${p.handle.length>9?p.handle.substring(0,9)+'..':p.handle}</div>
-      <div class="race-seat-score" style="color:${isDone?'var(--green)':isBust?'var(--red-glow)':'var(--gold)'}">${p.score||'?'} ${isDone?'✓':isBust?'✗':'▶'}</div>`;
+      <div class="race-seat-avatar ${avatarClass} ${isMe?'me':''}" style="width:36px;height:36px;font-size:13px;">${p?(isMe?'★':i+1):(i+1)}</div>
+      <div class="race-seat-name ${isMe?'me-name':''}" style="font-size:8px;">${p?(isMe?'YOU':p.handle.substring(0,6)):'─'}</div>
+      <div class="race-seat-score" style="font-size:8px;color:${isDone?'#00ff88':isBust?'#ff4444':'var(--gold)'};">${p?(p.score||'?'):''}${p?(isDone?'✓':isBust?'✗':''):''}</div>`;
     el.appendChild(seat);
-  });
+  }
 }
 
 async function endRacePlaying() {
@@ -1701,7 +1736,7 @@ async function resolveRace() {
     const ds=total(dealerHand);
     revealDealer();
     tlog('info',`DEALER: ${hStr(dealerHand)} = ${ds}`);
-    const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,score,status`,
+    const pr = await fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&select=handle,score,status,cards`,
       {headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
     const players = await pr.json();
     const results = players.map(p => {
@@ -1774,10 +1809,28 @@ function closeRaceResults() {
   newHand();
 }
 function playAgainRace() { closeRaceResults(); setTimeout(()=>openRaceLobby(),300); }
-function leaveAndGoHome() {
+async function leaveAndGoHome() {
+  await penalizeRaceLeave();
   clearInterval(racePollingInterval); clearInterval(racePollInterval); clearInterval(autoStartTimer);
   if (currentRaceId) fetch(`https://mvakqyddivstvsbioptg.supabase.co/rest/v1/race_hands?race_id=eq.${currentRaceId}&handle=eq.${encodeURIComponent(playerName)}`,{method:'DELETE',headers:{'apikey':'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo','Authorization':'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im12YWtxeWRkaXZzdHZzYmlvcHRnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzIwMzQ4NjIsImV4cCI6MjA4NzYxMDg2Mn0.aYl2lm3b2us5Y6GCpDkBv2ggNte8FSx3EyofyLB5qTo'}});
   window.location.href = 'https://lobstargames.win';
+}
+
+async function penalizeRaceLeave() {
+  // Deduct race bet as penalty for leaving mid-race
+  if (currentRaceId && currentRaceBet > 0 && raceState === 'playing') {
+    balance = Math.max(0, balance - currentRaceBet);
+    updBal();
+    tlog('warn', `⚔️ Left race — lost ${currentRaceBet.toLocaleString()} $LOBSTAR bet`);
+    // Save updated balance to Supabase
+    try {
+      await fetch(`${SUPA_URL}/rest/v1/leaderboard?handle=eq.${encodeURIComponent(playerName)}`, {
+        method:'PATCH',
+        headers:{'apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Content-Type':'application/json','Prefer':'return=minimal'},
+        body:JSON.stringify({balance:balance})
+      });
+    } catch(e) {}
+  }
 }
 
 function leaveRace() {
@@ -2060,7 +2113,10 @@ renderLB();
 <!-- RACE LIVE BAR (inside game, above dealer) -->
 <div class="race-bar" id="raceBar">
   <div class="race-bar-title">⚔️ RACE IN PROGRESS</div>
-  <div id="racePlayersLive" style="display:flex;justify-content:center;gap:16px;padding:4px 10px;flex-wrap:wrap;"></div>
+  <div id="raceBarTable" style="position:relative;width:100%;height:130px;">
+    <div style="position:absolute;left:5%;right:5%;top:0;bottom:20px;background:radial-gradient(ellipse 90% 85% at 50% 45%,#0a160a 0%,#040a04 100%);border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:2px solid #1a3a1a;"></div>
+    <div id="racePlayersLive" style="position:absolute;inset:0;"></div>
+  </div>
 </div>
 
 <!-- RACE RESULTS -->
