@@ -343,29 +343,30 @@ header{text-align:center;padding:16px 20px 8px;border-bottom:1px solid rgba(255,
 .race-close-btn{background:transparent;color:var(--text-dim);border:1px solid rgba(255,184,0,0.2);font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:2px;padding:12px 24px;border-radius:3px;cursor:pointer;}
 
 /* ── RACE TABLE LAYOUT ── */
-.race-table-wrap{position:relative;width:100%;height:310px;margin-bottom:8px;}
-.race-table-felt{position:absolute;left:5%;right:5%;top:10px;bottom:60px;background:radial-gradient(ellipse 90% 80% at 50% 50%,#3d1a00 0%,#1f0d00 60%,#0e0600 100%);border-radius:50%;border:3px solid rgba(255,140,0,0.45);box-shadow:0 0 40px rgba(255,80,0,0.08),inset 0 0 50px rgba(0,0,0,0.5);}
+.race-table-wrap{position:relative;width:100%;height:340px;margin-bottom:8px;}
+.race-table-felt{position:absolute;left:2%;right:2%;top:0;bottom:55px;background:radial-gradient(ellipse 85% 80% at 50% 45%,#0d1a0d 0%,#060f06 50%,#020802 100%);border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:4px solid #1a3a1a;box-shadow:0 0 0 1px #0f2a0f,0 0 40px rgba(0,0,0,0.9),inset 0 0 80px rgba(0,0,0,0.7);}
+.race-felt-inner{position:absolute;left:8%;right:8%;top:15px;bottom:70px;border-radius:50% 50% 45% 45%/40% 40% 55% 55%;border:2px solid rgba(255,255,255,0.04);}
 .race-dealer-spot{position:absolute;top:18px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:3px;z-index:3;}
 .race-dealer-avatar{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#cc5500,#6b2200);border:2px solid var(--gold);display:flex;align-items:center;justify-content:center;font-size:22px;box-shadow:0 0 16px rgba(255,100,0,0.5);}
 .race-dealer-label{font-family:'Bebas Neue',sans-serif;font-size:11px;color:var(--gold);letter-spacing:2px;}
 .race-dealer-cards{display:flex;gap:3px;margin-top:2px;min-height:20px;}
-.race-seats-row{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:flex-end;padding:0 10px 0;}
-.race-seat{display:flex;flex-direction:column;align-items:center;gap:3px;min-width:70px;z-index:3;}
-.race-seat-cards{display:flex;gap:2px;min-height:32px;align-items:center;margin-bottom:2px;}
-.race-mini-card{width:22px;height:32px;background:#fff;border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 1px 3px rgba(0,0,0,0.5);}
+.race-seats-row{position:absolute;bottom:0;left:0;right:0;display:flex;justify-content:space-around;align-items:flex-end;padding:0 4px 0;}
+.race-seat{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:0;width:calc(100%/6 - 4px);max-width:70px;z-index:3;}
+.race-seat-cards{display:flex;gap:2px;min-height:30px;align-items:center;margin-bottom:2px;}
+.race-mini-card{width:18px;height:28px;background:#fff;border-radius:2px;display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:bold;border:1px solid #ccc;box-shadow:1px 1px 3px rgba(0,0,0,0.5);}
 .race-mini-card.red{color:#cc0000;}
 .race-mini-card.black{color:#111;}
-.race-mini-card.facedown{background:linear-gradient(135deg,#1a0a00,#3a1500);border-color:rgba(255,140,0,0.4);}
-.race-seat-avatar{width:50px;height:50px;border-radius:50%;background:rgba(255,100,0,0.06);border:2px solid rgba(255,140,0,0.25);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all 0.3s;}
-.race-seat-avatar.filled{background:rgba(255,140,0,0.1);border-color:rgba(255,140,0,0.5);box-shadow:0 0 10px rgba(255,100,0,0.2);}
-.race-seat-avatar.me{background:rgba(255,184,0,0.15);border-color:var(--gold);box-shadow:0 0 16px rgba(255,184,0,0.5);}
-.race-seat-avatar.empty{opacity:0.3;}
-.race-seat-avatar.playing{border-color:rgba(255,140,0,0.9)!important;box-shadow:0 0 12px rgba(255,100,0,0.5)!important;animation:npulse 1.2s ease infinite;}
-.race-seat-avatar.done{border-color:rgba(0,255,136,0.7)!important;background:rgba(0,255,136,0.08)!important;}
-.race-seat-avatar.bust{border-color:rgba(255,50,50,0.6)!important;}
-.race-seat-name{font-family:'Bebas Neue',sans-serif;font-size:11px;letter-spacing:1px;color:var(--text-dim);text-align:center;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.race-seat-name.me-name{color:var(--gold);}
-.race-seat-score{font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--gold);background:rgba(0,0,0,0.6);padding:1px 5px;border-radius:6px;border:1px solid rgba(255,184,0,0.2);}
+.race-mini-card.facedown{background:linear-gradient(135deg,#0a1a0a,#0f2a0f);border-color:rgba(0,200,0,0.3);}
+.race-seat-avatar{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,0.03);border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:18px;transition:all 0.3s;}
+.race-seat-avatar.filled{background:rgba(255,184,0,0.08);border-color:rgba(255,184,0,0.4);box-shadow:0 0 8px rgba(255,184,0,0.15);}
+.race-seat-avatar.me{background:rgba(255,184,0,0.15);border-color:var(--gold);box-shadow:0 0 14px rgba(255,184,0,0.5);}
+.race-seat-avatar.empty{opacity:0.2;filter:grayscale(1);}
+.race-seat-avatar.playing{border-color:var(--gold)!important;box-shadow:0 0 12px rgba(255,184,0,0.5)!important;animation:npulse 1.2s ease infinite;}
+.race-seat-avatar.done{border-color:#00ff88!important;background:rgba(0,255,136,0.08)!important;box-shadow:0 0 10px rgba(0,255,136,0.3)!important;}
+.race-seat-avatar.bust{border-color:rgba(255,50,50,0.7)!important;background:rgba(255,0,0,0.05)!important;}
+.race-seat-name{font-family:'Bebas Neue',sans-serif;font-size:10px;letter-spacing:1px;color:rgba(255,255,255,0.5);text-align:center;max-width:65px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.race-seat-name.me-name{color:var(--gold);font-size:10px;}
+.race-seat-score{font-family:'Share Tech Mono',monospace;font-size:9px;color:rgba(255,255,255,0.6);background:rgba(0,0,0,0.7);padding:1px 4px;border-radius:4px;border:1px solid rgba(255,255,255,0.1);}
 </style>
 </head>
 <body>
@@ -1269,7 +1270,7 @@ async function registerReferral(isNewPlayer) {
 // ══════════════════════════════════════════
 let currentRaceId = null;
 let currentRaceBet = 500;
-let currentRaceMax = 4;
+let currentRaceMax = 6;
 let racePollingInterval = null;
 let racePollInterval = null;
 let raceRole = null;
@@ -1354,7 +1355,7 @@ function selectRaceBet(amt) {
 }
 function selectRaceMax(n) {
   currentRaceMax = n;
-  [2,4].forEach(a => { const el=document.getElementById('rmax'+a); if(el) el.classList.toggle('sel',a===n); });
+  [2,4,6].forEach(a => { const el=document.getElementById('rmax'+a); if(el) el.classList.toggle('sel',a===n); });
 }
 
 async function loadOpenRaces() {
@@ -1469,6 +1470,7 @@ function startAutoStartTimer(raceId) {
     if (el) el.textContent = autoStartSecs;
     if (autoStartSecs <= 0) {
       clearInterval(autoStartTimer);
+      // Start with whoever is available, not just when full
       tlog('warn', '⏱ Auto-starting race...');
       // Check player count
       try {
@@ -1526,7 +1528,8 @@ function updateWaitingRoomUI(players, race) {
   const grid = document.getElementById('racePlayersGrid');
   grid.innerHTML = '';
   const emojis = ['🦞','🦀','🐙','🦑','🐡','🦈'];
-  for (let i=0; i<race.max_players; i++) {
+  const totalSeats = 6; // always show 6 seats
+  for (let i=0; i<totalSeats; i++) {
     const p = players[i];
     const isMe = p && p.handle === playerName;
     const seat = document.createElement('div');
@@ -2009,8 +2012,8 @@ renderLB();
         <div>
           <div class="race-form-label">MAX PLAYERS</div>
           <div class="race-bet-chips" id="raceMaxChips">
-            <div class="race-bet-chip" onclick="selectRaceMax(2)" id="rmax2">1v1</div>
-            <div class="race-bet-chip sel" onclick="selectRaceMax(4)" id="rmax4">4 PLAYERS</div>
+            <div class="race-bet-chip sel" style="cursor:default;opacity:0.7;">6 SEATS</div>
+            <div style="font-size:10px;color:var(--text-dim);font-family:'Share Tech Mono',monospace;margin-top:4px;">Auto-starts with available players</div>
           </div>
         </div>
         <button class="race-create-btn" onclick="createRace()">🚀 CREATE RACE</button>
@@ -2031,6 +2034,7 @@ renderLB();
       <div class="race-waiting-sub" id="raceWaitSub">Auto-starts when full or in <span id="raceAutoTimer" style="color:var(--gold)">60</span>s</div>
       <div class="race-table-wrap" id="raceTableWrap">
         <div class="race-table-felt"></div>
+        <div class="race-felt-inner"></div>
         <div class="race-dealer-spot">
           <div class="race-dealer-avatar">🃏</div>
           <div class="race-dealer-label">DEALER</div>
